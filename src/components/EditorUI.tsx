@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { JeopardyCell, useBoardStore, Slide } from "../store/editorStore";
+import MediaUploader from "./MediaUploader";
 
 interface EditorUIProps {
   cell: JeopardyCell;
@@ -9,7 +10,10 @@ interface EditorUIProps {
 
 const EditorUI: React.FC<EditorUIProps> = ({ cell, close }) => {
   const updateCell = useBoardStore((state) => state.updateCell);
+
   const [slides, setSlides] = useState<Slide[]>(cell.slides);
+
+  const [mediaTarget, setMediaTarget] = useState<number | null>(null);
 
   const updateSlideContent = (index: number, content: string) => {
     const newSlides = [...slides];
@@ -18,8 +22,22 @@ const EditorUI: React.FC<EditorUIProps> = ({ cell, close }) => {
   };
 
   const addSlide = () => setSlides([...slides, { type: "text", content: "" }]);
+
   const removeSlide = (index: number) =>
     setSlides(slides.filter((_, i) => i !== index));
+
+  const handleMediaAdded = (url: string, type: Slide["type"]) => {
+    if (mediaTarget === null) return;
+
+    const updated = [...slides];
+    updated[mediaTarget] = {
+      type,
+      content: url,
+    };
+
+    setSlides(updated);
+    setMediaTarget(null);
+  };
 
   const save = () => {
     updateCell({ ...cell, slides });
@@ -37,6 +55,7 @@ const EditorUI: React.FC<EditorUIProps> = ({ cell, close }) => {
           <div key={index} className="mb-4 border p-2 rounded">
             <div className="flex justify-between items-center mb-1">
               <span className="text-black font-medium">Slide {index + 1}</span>
+
               {slides.length > 1 && (
                 <button
                   onClick={() => removeSlide(index)}
@@ -46,13 +65,30 @@ const EditorUI: React.FC<EditorUIProps> = ({ cell, close }) => {
                 </button>
               )}
             </div>
+
             <textarea
               value={slide.content}
               onChange={(e) => updateSlideContent(index, e.target.value)}
               className="border w-full p-1 text-black"
             />
+
+            <div className="mt-2 flex gap-2 items-center">
+              <button
+                onClick={() => setMediaTarget(index)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-purple-500 text-white hover:bg-purple-600"
+                title="Add Media"
+              >
+                +
+              </button>
+            </div>
           </div>
         ))}
+
+        {mediaTarget !== null && (
+          <MediaUploader
+            onAdd={(type, content) => handleMediaAdded(content, type)}
+          />
+        )}
 
         <button
           onClick={addSlide}
@@ -68,6 +104,7 @@ const EditorUI: React.FC<EditorUIProps> = ({ cell, close }) => {
           >
             Cancel
           </button>
+
           <button
             onClick={save}
             className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
