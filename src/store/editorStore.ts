@@ -1,10 +1,19 @@
 import { create } from "zustand";
 
-export type CellType = "text" | "image" | "audio" | "video";
+export type ElementKind = "text" | "image" | "audio" | "video";
 
-export interface Slide {
-  type: CellType;
+export interface SlideElement {
+  id: string;
+  kind: ElementKind;
   content: string;
+
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+export interface Slide {
+  elements: SlideElement[];
 }
 
 export interface JeopardyCell {
@@ -47,8 +56,32 @@ export const useBoardStore = create<BoardState>((set, get) => {
         col: c,
         points: (r + 1) * 100,
         slides: [
-          { type: "text", content: `Question ${r + 1}-${c + 1}` },
-          { type: "text", content: `Answer ${r + 1}-${c + 1}` },
+          {
+            elements: [
+              {
+                id: crypto.randomUUID(),
+                kind: "text",
+                content: "",
+                x: 20,
+                y: 20,
+                width: 200,
+                height: 200,
+              },
+            ],
+          },
+          {
+            elements: [
+              {
+                id: crypto.randomUUID(),
+                kind: "text",
+                content: "",
+                x: 20,
+                y: 20,
+                width: 200,
+                height: 200,
+              },
+            ],
+          },
         ],
       });
     }
@@ -94,8 +127,32 @@ export const useBoardStore = create<BoardState>((set, get) => {
           col: c,
           points: (newRow + 1) * 100,
           slides: [
-            { type: "text", content: "" },
-            { type: "text", content: "" },
+            {
+              elements: [
+                {
+                  id: crypto.randomUUID(),
+                  kind: "text",
+                  content: "",
+                  x: 20,
+                  y: 20,
+                  width: 200,
+                  height: 200,
+                },
+              ],
+            },
+            {
+              elements: [
+                {
+                  id: crypto.randomUUID(),
+                  kind: "text",
+                  content: "",
+                  x: 20,
+                  y: 20,
+                  width: 200,
+                  height: 200,
+                },
+              ],
+            },
           ],
         });
       }
@@ -118,8 +175,32 @@ export const useBoardStore = create<BoardState>((set, get) => {
           col: newCol,
           points: (r + 1) * 100,
           slides: [
-            { type: "text", content: "" },
-            { type: "text", content: "" },
+            {
+              elements: [
+                {
+                  id: crypto.randomUUID(),
+                  kind: "text",
+                  content: "",
+                  x: 20,
+                  y: 20,
+                  width: 200,
+                  height: 200,
+                },
+              ],
+            },
+            {
+              elements: [
+                {
+                  id: crypto.randomUUID(),
+                  kind: "text",
+                  content: "",
+                  x: 20,
+                  y: 20,
+                  width: 200,
+                  height: 200,
+                },
+              ],
+            },
           ],
         });
       }

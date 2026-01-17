@@ -21,23 +21,56 @@ const QuestionSlide: React.FC<QuestionSlideProps> = ({ cell, close }) => {
   const slide: Slide = cell.slides[currentSlideIndex];
 
   const renderSlideContent = (slide: Slide) => {
-    switch (slide.type) {
-      case "text":
-        return <p className="text-black">{slide.content}</p>;
-      case "image":
-        return <img src={slide.content} alt="slide" className="max-h-[60vh] w-auto mx-auto" />;
-      case "audio":
-        return <audio controls src={slide.content} className="w-full mt-2" />;
-      case "video":
-        return <video controls src={slide.content} className="max-h-[60vh] w-full mx-auto" />;
-      default:
-        return null;
-    }
+    return (
+      <div className="relative w-full h-[60vh]">
+        {slide.elements.map((el) => {
+          const style: React.CSSProperties = {
+            position: "absolute",
+            left: el.x,
+            top: el.y,
+            width: el.width,
+          };
+
+          switch (el.kind) {
+            case "text":
+              return (
+                <div
+                  key={el.id}
+                  style={style}
+                  className="text-black whitespace-pre-wrap"
+                >
+                  {el.content}
+                </div>
+              );
+
+            case "image":
+              return (
+                <img
+                  key={el.id}
+                  src={el.content}
+                  style={style}
+                  className="max-w-full"
+                />
+              );
+
+            case "audio":
+              return (
+                <audio key={el.id} controls src={el.content} style={style} />
+              );
+
+            case "video":
+              return (
+                <video key={el.id} controls src={el.content} style={style} />
+              );
+          }
+        })}
+      </div>
+    );
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded w-[80vw] max-w-lg text-center relative max-h-[80vh] overflow-y-auto">
+      <div className="bg-white p-4 rounded w-[90vw] h-[85vh] max-w-[1400px] overflow-y-auto">
         {renderSlideContent(slide)}
 
         <button
