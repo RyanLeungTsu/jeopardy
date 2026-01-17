@@ -17,17 +17,22 @@ export interface JeopardyCell {
 interface BoardState {
   editMode: boolean;
   setEditMode: (mode: boolean) => void;
+
   rows: number;
   columns: number;
   addRow: () => void;
   addColumn: () => void;
   removeRow: () => void;
   removeColumn: () => void;
+
   categories: string[];
+
   cells: JeopardyCell[];
   selectedCell: JeopardyCell | null;
   selectCell: (cell: JeopardyCell | null) => void;
   updateCell: (cell: JeopardyCell) => void;
+  usedCells: { [key: string]: boolean };
+  markCellUsed: (cell: JeopardyCell) => void;
 }
 
 export const useBoardStore = create<BoardState>((set, get) => {
@@ -64,9 +69,18 @@ export const useBoardStore = create<BoardState>((set, get) => {
     updateCell: (updated) =>
       set({
         cells: get().cells.map((c) =>
-          c.row === updated.row && c.col === updated.col ? updated : c
+          c.row === updated.row && c.col === updated.col ? updated : c,
         ),
       }),
+
+    usedCells: {},
+
+    markCellUsed: (cell) => {
+      const key = `${cell.row}-${cell.col}`;
+      set((state) => ({
+        usedCells: { ...state.usedCells, [key]: true },
+      }));
+    },
 
     addRow: () => {
       const { rows, columns, cells } = get();

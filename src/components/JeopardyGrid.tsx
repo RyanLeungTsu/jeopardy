@@ -10,6 +10,8 @@ const BoardGrid: React.FC = () => {
     categories,
     selectedCell,
     selectCell,
+    usedCells,
+    markCellUsed,
     editMode,
     addRow,
     addColumn,
@@ -75,15 +77,27 @@ const BoardGrid: React.FC = () => {
           gridTemplateColumns: `repeat(${categories.length}, minmax(0, 1fr))`,
         }}
       >
-        {cells.map((cell) => (
-          <div
-            key={`${cell.row}-${cell.col}`}
-            onClick={() => selectCell(cell)}
-            className="flex items-center justify-center border border-gray-400 cursor-pointer bg-blue-500 text-white font-bold h-20 w-32 hover:bg-blue-600 transition"
-          >
-            {cell.points}
-          </div>
-        ))}
+        {cells.map((cell) => {
+          const isUsed = usedCells[`${cell.row}-${cell.col}`];
+
+          return (
+            <div
+              key={`${cell.row}-${cell.col}`}
+              onClick={() => {
+                if (editMode) {
+                  selectCell(cell);
+                } else if (!isUsed) {
+                  markCellUsed(cell);
+                  selectCell(cell);
+                }
+              }}
+              className={`flex items-center justify-center border border-gray-400 font-bold h-20 w-32 transition
+        ${isUsed ? "bg-gray-400 text-gray-700 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600 cursor-pointer"}`}
+            >
+              {cell.points}
+            </div>
+          );
+        })}
       </div>
 
       {/* Modals */}
