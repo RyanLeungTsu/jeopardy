@@ -24,22 +24,22 @@ const EditorUI: React.FC<EditorUIProps> = ({ cell, close }) => {
 
   // const addSlide = () => setSlides([...slides, { type: "text", content: "" }]);
   const addSlide = () =>
-  setSlides([
-    ...slides,
-    {
-      elements: [
-        {
-          id: crypto.randomUUID(),
-          kind: "text",
-          content: "",
-          x: 20,
-          y: 20,
-          width: 200,
-          height: 200,
-        },
-      ],
-    },
-  ]);
+    setSlides([
+      ...slides,
+      {
+        elements: [
+          {
+            id: crypto.randomUUID(),
+            kind: "text",
+            content: "",
+            x: 20,
+            y: 20,
+            width: 200,
+            height: 200,
+          },
+        ],
+      },
+    ]);
 
   const removeSlide = (index: number) =>
     setSlides(slides.filter((_, i) => i !== index));
@@ -58,24 +58,36 @@ const EditorUI: React.FC<EditorUIProps> = ({ cell, close }) => {
   // };
 
   const handleMediaAdded = (url: string, type: "image" | "audio" | "video") => {
-  if (mediaTarget === null) return;
+    if (mediaTarget === null) return;
 
-  const updated = [...slides];
+    const updated = [...slides];
 
-  updated[mediaTarget].elements.push({
-    id: crypto.randomUUID(),
-    kind: type,
-    content: url,
-    x: 50,
-    y: 50,
-    width: 200,
-    height: 200,
-  });
+    updated[mediaTarget].elements.push({
+      id: crypto.randomUUID(),
+      kind: type,
+      content: url,
+      x: 50,
+      y: 50,
+      width: 200,
+      height: 200,
+    });
 
-  setSlides(updated);
-  setMediaTarget(null);
-};
+    setSlides(updated);
+    setMediaTarget(null);
+  };
 
+  const RemoveMedia = (slideIndex: number, elementId: string) => {
+    const updated = [...slides];
+
+    updated[slideIndex] = {
+      ...updated[slideIndex],
+      elements: updated[slideIndex].elements.filter(
+        (el) => el.id !== elementId,
+      ),
+    };
+
+    setSlides(updated);
+  };
 
   const save = () => {
     updateCell({ ...cell, slides });
@@ -111,6 +123,7 @@ const EditorUI: React.FC<EditorUIProps> = ({ cell, close }) => {
                 updated[index] = newSlide;
                 setSlides(updated);
               }}
+              onRemoveMedia={(elementId) => RemoveMedia(index, elementId)}
             />
             {/* <textarea
               value={slide.content}

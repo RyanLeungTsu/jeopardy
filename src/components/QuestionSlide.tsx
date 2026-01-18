@@ -82,7 +82,7 @@ const QuestionSlide: React.FC<QuestionSlideProps> = ({ cell, close }) => {
 
         <button
           onClick={close}
-          className="absolute top-2 right-2 text-gray-700 hover:text-gray-900"
+          className="absolute top-4 right-4 text-white hover:text-gray-900"
         >
           X
         </button>

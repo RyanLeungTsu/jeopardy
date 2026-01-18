@@ -84,15 +84,13 @@ const BoardGrid: React.FC = () => {
             <div
               key={`${cell.row}-${cell.col}`}
               onClick={() => {
-                if (editMode) {
-                  selectCell(cell);
-                } else if (!isUsed) {
-                  markCellUsed(cell);
-                  selectCell(cell);
+                selectCell(cell); 
+                if (!editMode) {
+                  markCellUsed(cell); 
                 }
               }}
               className={`flex items-center justify-center border border-gray-400 font-bold h-20 w-32 transition
-        ${isUsed ? "bg-gray-400 text-gray-700 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600 cursor-pointer"}`}
+        ${isUsed ? "bg-gray-400 text-gray-700" : "bg-blue-500 text-white hover:bg-blue-600 cursor-pointer"}`}
             >
               {cell.points}
             </div>

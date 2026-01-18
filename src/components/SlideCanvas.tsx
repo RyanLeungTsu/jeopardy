@@ -3,46 +3,69 @@ import React from "react";
 import { Rnd } from "react-rnd";
 import { Slide, SlideElement } from "../store/editorStore";
 
-interface Props {
+interface SlideCanvasProps {
   slide: Slide;
   update: (slide: Slide) => void;
+  onRemoveMedia: (elementId: string) => void; 
 }
 
-const SlideCanvas: React.FC<Props> = ({ slide, update }) => {
+const SlideCanvas: React.FC<SlideCanvasProps> = ({
+  slide,
+  update,
+  onRemoveMedia, 
+}) => {
   const updateElement = (id: string, changes: Partial<SlideElement>) => {
     update({
       elements: slide.elements.map((el) =>
-        el.id === id ? { ...el, ...changes } : el,
+        el.id === id ? { ...el, ...changes } : el
       ),
     });
   };
 
   const renderElement = (el: SlideElement) => {
-    switch (el.kind) {
-      case "text":
-        return (
+    return (
+      <div className="relative group w-full h-full">
+        {el.kind === "text" && (
           <textarea
-            className="w-full h-full bg-transparent resize-none text-black"
+            className="w-full h-full bg-transparent resize-none text-black cursor-text"
             value={el.content}
-            onChange={(e) => updateElement(el.id, { content: e.target.value })}
+            onChange={(e) =>
+              updateElement(el.id, { content: e.target.value })
+            }
           />
-        );
+        )}
 
-      case "image":
-        return (
+        {el.kind === "image" && (
           <img
             src={el.content}
             className="w-full h-full object-contain"
             draggable={false}
           />
-        );
+        )}
 
-      case "audio":
-        return <audio controls src={el.content} />;
+        {el.kind === "audio" && <audio controls src={el.content} />}
 
-      case "video":
-        return <video src={el.content} controls className="w-full h-full" />;
-    }
+        {el.kind === "video" && (
+          <video src={el.content} controls className="w-full h-full" />
+        )}
+
+        {el.kind !== "text" && (
+          <button
+            onClick={() => onRemoveMedia(el.id)} // now TypeScript knows this exists
+            className="
+              absolute top-1 right-1
+              bg-red-500 text-white
+              rounded-full w-6 h-6
+              flex items-center justify-center
+              opacity-0 group-hover:opacity-100
+              transition hover:bg-red-600
+            "
+          >
+            ✕
+          </button>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -50,7 +73,7 @@ const SlideCanvas: React.FC<Props> = ({ slide, update }) => {
       {slide.elements.map((el) => (
         <Rnd
           key={el.id}
-          size={{ width: el.width, height: "auto" }}
+          size={{ width: el.width, height: el.height }}
           position={{ x: el.x, y: el.y }}
           bounds="parent"
           enableResizing={{
@@ -63,7 +86,9 @@ const SlideCanvas: React.FC<Props> = ({ slide, update }) => {
             bottomLeft: true,
             topLeft: true,
           }}
-          onDragStop={(_, d) => updateElement(el.id, { x: d.x, y: d.y })}
+          onDragStop={(_, d) =>
+            updateElement(el.id, { x: d.x, y: d.y })
+          }
           onResizeStop={(_, __, ref, ___, position) =>
             updateElement(el.id, {
               width: ref.offsetWidth,
