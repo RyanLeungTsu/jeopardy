@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { JeopardyCell, Slide } from "../store/editorStore";
+import { JeopardyCell, Slide, DefaultFontSize } from "../store/editorStore";
 
 interface QuestionSlideProps {
   cell: JeopardyCell;
@@ -36,7 +36,10 @@ const QuestionSlide: React.FC<QuestionSlideProps> = ({ cell, close }) => {
               return (
                 <div
                   key={el.id}
-                  style={style}
+                  style={{
+                    ...style,
+                    fontSize: el.fontSize || DefaultFontSize,
+                  }}
                   className="text-black whitespace-pre-wrap"
                 >
                   {el.content}

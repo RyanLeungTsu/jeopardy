@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { JeopardyCell, useBoardStore, Slide } from "../store/editorStore";
+import { JeopardyCell, useBoardStore, Slide, DefaultFontSize } from "../store/editorStore";
 import MediaUploader from "./MediaUploader";
 import SlideCanvas from "./SlideCanvas";
 
@@ -12,7 +12,16 @@ interface EditorUIProps {
 const EditorUI: React.FC<EditorUIProps> = ({ cell, close }) => {
   const updateCell = useBoardStore((state) => state.updateCell);
 
-  const [slides, setSlides] = useState<Slide[]>(cell.slides);
+const [slides, setSlides] = useState<Slide[]>(
+  cell.slides.map((slide) => ({
+    ...slide,
+    elements: slide.elements.map((el) => ({
+      ...el,
+      fontSize: el.fontSize ?? DefaultFontSize, 
+      content: el.content ?? "",    
+    })),
+  })),
+);
 
   const [mediaTarget, setMediaTarget] = useState<number | null>(null);
 
@@ -36,6 +45,7 @@ const EditorUI: React.FC<EditorUIProps> = ({ cell, close }) => {
             y: 20,
             width: 200,
             height: 200,
+            fontSize: DefaultFontSize,
           },
         ],
       },
@@ -90,13 +100,22 @@ const EditorUI: React.FC<EditorUIProps> = ({ cell, close }) => {
   };
 
   const save = () => {
-    updateCell({ ...cell, slides });
-    close();
-  };
+  updateCell({
+    ...cell,
+    slides: slides.map(slide => ({
+      ...slide,
+      elements: slide.elements.map(el => ({
+        ...el,
+        fontSize: el.fontSize ?? DefaultFontSize, 
+      })),
+    })),
+  });
+  close();
+};
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-4 rounded w-[90vw] h-[85vh] max-w-[1400px] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={close}>
+      <div className="bg-white p-4 rounded w-[90vw] h-[85vh] max-w-[60vw] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <h2 className="font-bold mb-2 text-black">
           Edit Cell ({cell.row + 1},{cell.col + 1})
         </h2>
@@ -115,16 +134,18 @@ const EditorUI: React.FC<EditorUIProps> = ({ cell, close }) => {
                 </button>
               )}
             </div>
-
-            <SlideCanvas
-              slide={slide}
-              update={(newSlide) => {
-                const updated = [...slides];
-                updated[index] = newSlide;
-                setSlides(updated);
-              }}
-              onRemoveMedia={(elementId) => RemoveMedia(index, elementId)}
-            />
+            <div className="h-[45vh]">
+              <SlideCanvas
+                slide={slide}
+                update={(newSlide) => {
+                  const updated = [...slides];
+                  updated[index] = newSlide;
+                  setSlides(updated);
+                }}
+                className="w-full aspect-video border bg-gray-100 mx-auto"
+                onRemoveMedia={(elementId) => RemoveMedia(index, elementId)}
+              />
+            </div>
             {/* <textarea
               value={slide.content}
               onChange={(e) => updateSlideContent(index, e.target.value)}

@@ -1,11 +1,14 @@
 import { create } from "zustand";
 
 export type ElementKind = "text" | "image" | "audio" | "video";
+export const DefaultFontSize = 40;
 
 export interface SlideElement {
   id: string;
   kind: ElementKind;
   content: string;
+
+  fontSize?: number;
 
   x: number;
   y: number;
@@ -33,8 +36,11 @@ interface BoardState {
   addColumn: () => void;
   removeRow: () => void;
   removeColumn: () => void;
+  
 
   categories: string[];
+  setCategories: (cats: string[]) => void;
+  
 
   cells: JeopardyCell[];
   selectedCell: JeopardyCell | null;
@@ -64,8 +70,9 @@ export const useBoardStore = create<BoardState>((set, get) => {
                 content: "",
                 x: 20,
                 y: 20,
-                width: 200,
-                height: 200,
+                width: 500,
+                height: 300,
+                fontSize: DefaultFontSize,
               },
             ],
           },
@@ -77,8 +84,9 @@ export const useBoardStore = create<BoardState>((set, get) => {
                 content: "",
                 x: 20,
                 y: 20,
-                width: 200,
-                height: 200,
+                width: 500,
+                height: 300,
+                fontSize: DefaultFontSize,
               },
             ],
           },
@@ -94,6 +102,7 @@ export const useBoardStore = create<BoardState>((set, get) => {
     rows,
     columns,
     categories: Array(columns).fill("Category"),
+    setCategories: (cats: string[]) => set({ categories: cats }),
     cells,
 
     selectedCell: null,
@@ -208,7 +217,7 @@ export const useBoardStore = create<BoardState>((set, get) => {
       set({
         columns: columns + 1,
         cells: newCells,
-        categories: [...get().categories, "Category"],
+        categories: [...get().categories, ""],
       });
     },
 
