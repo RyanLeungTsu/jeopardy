@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useBoardStore } from "../store/editorStore";
 
 const Interface: React.FC = () => {
@@ -74,7 +74,7 @@ const Interface: React.FC = () => {
           onClick={() => setSaveModalOpen(true)}
           className="fixed right-4 top-24 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 z-50"
         >
-          Save Board
+          My Boards
         </button>
       )}
 
@@ -82,7 +82,9 @@ const Interface: React.FC = () => {
       {saveModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-4 rounded w-[90vw] max-w-[600px]">
-            <h2 className="text-lg font-bold mb-4 text-gray-900">Save Board</h2>
+            <h2 className="text-lg font-bold mb-4 text-gray-900">
+              Current Board
+            </h2>
 
             {/* Rename n save as new */}
             <div className="mb-4">
@@ -106,61 +108,61 @@ const Interface: React.FC = () => {
             </div>
 
             {/* Existing Boards */}
-            {boards.length > 1 && (
+            {boards.length > 0 && (
               <div>
-                <h3 className="font-semibold mb-2 text-gray-900">
-                  My Boards
-                </h3>
+                <h3 className="font-semibold mb-2 text-gray-900">My Boards</h3>
                 <ul className="max-h-64 overflow-y-auto border p-2 rounded">
-                  {boards
-                    .filter((b) => b.id !== activeBoard.id)
-                    .map((board) => (
-                      <li
-                        key={board.id}
-                        className="flex justify-between items-center mb-1 p-1 border rounded hover:bg-gray-100 cursor-pointer"
-                      >
-                        <span
-                          onClick={() => setActiveBoard(board.id)}
-                          className="flex-1 text-gray-900"
+                  {boards.map((board) => (
+                    <li
+                      key={board.id}
+                      className="flex justify-between items-center mb-1 p-1 border rounded hover:bg-gray-100 cursor-pointer"
+                    >
+                      <span className="flex-1 text-gray-900">{board.name}</span>
+
+                      <div className="flex gap-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!confirm(`Overwrite "${board.name}"?`)) return;
+                            updateActiveBoard({
+                              ...activeBoard!,
+                              id: board.id,
+                              updatedAt: Date.now(),
+                            });
+                          }}
+                          className="text-sm bg-red-500 text-white px-2 py-0.5 rounded hover:bg-red-600"
                         >
-                          {board.name}
-                        </span>
+                          Overwrite
+                        </button>
 
-                        <div className="flex gap-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (!confirm(`Overwrite "${board.name}"?`))
-                                return;
-                              updateActiveBoard({
-                                ...activeBoard,
-                                id: board.id,
-                                updatedAt: Date.now(),
-                              });
-                            }}
-                            className="text-sm bg-red-500 text-white px-2 py-0.5 rounded hover:bg-red-600"
-                          >
-                            Overwrite
-                          </button>
+                        <button
+                          onClick={() => {
+                            // Load this board and make it the activeBoard
+                            setActiveBoard(board.id);
+                          }}
+                          className="px-2 py-1 bg-green-500 text-white rounded"
+                        >
+                          Load
+                        </button>
 
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (
-                                !confirm(
-                                  `Delete "${board.name}"? This cannot be undone.`,
-                                )
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (
+                              !confirm(
+                                `Delete "${board.name}"? This cannot be undone.`,
                               )
-                                return;
-                              deleteBoard(board.id);
-                            }}
-                            className="text-sm bg-gray-500 text-white px-2 py-0.5 rounded hover:bg-gray-600"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </li>
-                    ))}
+                            )
+                              return;
+                            deleteBoard(board.id);
+                          }}
+                          className="text-sm bg-gray-500 text-white px-2 py-0.5 rounded hover:bg-gray-600"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  ))}
                 </ul>
               </div>
             )}

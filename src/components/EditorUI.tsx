@@ -18,8 +18,8 @@ const EditorUI: React.FC<EditorUIProps> = ({ cell, close }) => {
       ...slide,
       elements: slide.elements.map((el) => ({
         ...el,
-        fontSize: el.fontSize ?? DefaultFontSize, 
-        content: el.content ?? "",    
+        fontSize: el.fontSize ?? DefaultFontSize,
+        content: el.content ?? "",
       })),
     })),
   );
@@ -103,11 +103,11 @@ const EditorUI: React.FC<EditorUIProps> = ({ cell, close }) => {
   const save = () => {
     updateCell({
       ...cell,
-      slides: slides.map(slide => ({
+      slides: slides.map((slide) => ({
         ...slide,
-        elements: slide.elements.map(el => ({
+        elements: slide.elements.map((el) => ({
           ...el,
-          fontSize: el.fontSize ?? DefaultFontSize, 
+          fontSize: el.fontSize ?? DefaultFontSize,
         })),
       })),
     });
@@ -115,8 +115,14 @@ const EditorUI: React.FC<EditorUIProps> = ({ cell, close }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={close}>
-      <div className="bg-white p-4 rounded w-[90vw] h-[85vh] max-w-[60vw] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      onClick={close}
+    >
+      <div
+        className="bg-white p-4 rounded w-[90vw] h-[85vh] max-w-[60vw] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2 className="font-bold mb-2 text-black">
           Edit Cell ({cell.row + 1},{cell.col + 1})
         </h2>

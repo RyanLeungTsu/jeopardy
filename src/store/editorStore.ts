@@ -67,7 +67,6 @@ interface BoardState {
   setCategoryAt: (index: number, value: string) => void;
 }
 
-
 export function createEmptyBoard(name = ""): Board {
   const rows = 5;
   const columns = 6;
@@ -120,7 +119,6 @@ export const useBoardStore = create<BoardState>((set, get) => {
   const boards: Board[] = savedBoards
     ? JSON.parse(savedBoards)
     : [createEmptyBoard()];
-    
 
   return {
     editMode: false,
@@ -135,29 +133,43 @@ export const useBoardStore = create<BoardState>((set, get) => {
     // },
 
     setCategoryAt: (index: number, value: string) => {
-  const { activeBoard } = get();
-  if (!activeBoard) return;
+      const { activeBoard } = get();
+      if (!activeBoard) return;
 
-  const categories = [...activeBoard.categories];
-  categories[index] = value;
+      const categories = [...activeBoard.categories];
+      categories[index] = value;
 
-  get().updateActiveBoard({
-    ...activeBoard,
-    categories,
-    updatedAt: Date.now(),
-  });
-},
-
+      get().updateActiveBoard({
+        ...activeBoard,
+        categories,
+        updatedAt: Date.now(),
+      });
+    },
 
     createBoard: (name) => {
-      const newBoard = createEmptyBoard(name);
-      set((state) => {
-        const updatedBoards = [...state.boards, newBoard];
-        localStorage.setItem("jeopardyBoards", JSON.stringify(updatedBoards));
-        return {
-          boards: updatedBoards,
-          activeBoardId: newBoard.id,
-        };
+      const { activeBoard, boards } = get();
+      if (!activeBoard) return;
+
+      const newBoard: Board = {
+        ...activeBoard,
+        id: crypto.randomUUID(),
+        name: name || "Untitled Board",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        cells: activeBoard.cells.map((cell) => ({
+          ...cell,
+          slides: cell.slides.map((slide) => ({
+            elements: slide.elements.map((el) => ({ ...el })),
+          })),
+        })),
+        usedCells: { ...activeBoard.usedCells },
+      };
+
+      const updatedBoards = [...boards, newBoard];
+      localStorage.setItem("jeopardyBoards", JSON.stringify(updatedBoards));
+
+      set({
+        boards: updatedBoards,
       });
     },
 
@@ -177,26 +189,26 @@ export const useBoardStore = create<BoardState>((set, get) => {
     // },
 
     setActiveBoard: (id) =>
-  set((state) => ({
-    activeBoardId: id,
-    activeBoard: state.boards.find((b) => b.id === id) || null,
-  })),
+      set((state) => ({
+        activeBoardId: id,
+        activeBoard: state.boards.find((b) => b.id === id) || null,
+      })),
 
-  updateActiveBoard: (updatedBoard) => {
-  set((state) => {
-    const updatedBoards = state.boards.map((b) =>
-      b.id === updatedBoard.id ? updatedBoard : b
-    );
+    updateActiveBoard: (updatedBoard) => {
+      set((state) => {
+        const updatedBoards = state.boards.map((b) =>
+          b.id === updatedBoard.id ? updatedBoard : b,
+        );
 
-    localStorage.setItem("jeopardyBoards", JSON.stringify(updatedBoards));
+        localStorage.setItem("jeopardyBoards", JSON.stringify(updatedBoards));
 
-    return {
-      boards: updatedBoards,
-      activeBoardId: updatedBoard.id,
-      activeBoard: updatedBoard, 
-    };
-  });
-},
+        return {
+          boards: updatedBoards,
+          activeBoardId: updatedBoard.id,
+          activeBoard: updatedBoard,
+        };
+      });
+    },
 
     deleteBoard: (id) =>
       set((state) => {
@@ -214,12 +226,11 @@ export const useBoardStore = create<BoardState>((set, get) => {
         }
         localStorage.setItem("jeopardyBoards", JSON.stringify(remainingBoards));
         return {
-  boards: remainingBoards,
-  activeBoardId: newActiveBoardId,
-  activeBoard: newActiveBoard,
-};
+          boards: remainingBoards,
+          activeBoardId: newActiveBoardId,
+          activeBoard: newActiveBoard,
+        };
       }),
-  
 
     selectedCell: null,
     selectCell: (cell) => set({ selectedCell: cell }),
@@ -357,8 +368,5 @@ export const useBoardStore = create<BoardState>((set, get) => {
         updatedAt: Date.now(),
       });
     },
-
-   
-   
   };
 });

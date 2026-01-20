@@ -3,7 +3,6 @@ import { useBoardStore } from "../store/editorStore";
 import EditorUI from "./EditorUI";
 import QuestionSlide from "./QuestionSlide";
 
-
 const BoardGrid: React.FC = () => {
   const {
     activeBoard,
@@ -39,12 +38,12 @@ const BoardGrid: React.FC = () => {
               style={{ gridRow: 1, gridColumn: i + 1 }}
             >
               <input
-  type="text"
-  value={cat}
-  onChange={(e) => setCategoryAt(i, e.target.value)}
-  readOnly={!editMode}
-  className="w-full h-full bg-gray-800 text-white text-center font-bold border-none outline-none"
-/>
+                type="text"
+                value={cat}
+                onChange={(e) => setCategoryAt(i, e.target.value)}
+                readOnly={!editMode}
+                className="w-full h-full bg-gray-800 text-white text-center font-bold border-none outline-none"
+              />
             </div>
           ))}
 
@@ -71,7 +70,7 @@ const BoardGrid: React.FC = () => {
           })}
         </div>
       </div>
-  
+
       {/* Row/Column */}
       {editMode && (
         <div className="flex gap-2 mt-4">
