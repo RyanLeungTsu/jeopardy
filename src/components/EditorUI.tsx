@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
-import { JeopardyCell, useBoardStore, Slide, DefaultFontSize } from "../store/editorStore";
+import { useState } from "react";
+import type { JeopardyCell, Slide } from "../store/editorStore";
+import { useBoardStore, DefaultFontSize } from "../store/editorStore";
 import MediaUploader from "./MediaUploader";
 import SlideCanvas from "./SlideCanvas";
 
@@ -12,16 +13,16 @@ interface EditorUIProps {
 const EditorUI: React.FC<EditorUIProps> = ({ cell, close }) => {
   const updateCell = useBoardStore((state) => state.updateCell);
 
-const [slides, setSlides] = useState<Slide[]>(
-  cell.slides.map((slide) => ({
-    ...slide,
-    elements: slide.elements.map((el) => ({
-      ...el,
-      fontSize: el.fontSize ?? DefaultFontSize, 
-      content: el.content ?? "",    
+  const [slides, setSlides] = useState<Slide[]>(
+    cell.slides.map((slide) => ({
+      ...slide,
+      elements: slide.elements.map((el) => ({
+        ...el,
+        fontSize: el.fontSize ?? DefaultFontSize, 
+        content: el.content ?? "",    
+      })),
     })),
-  })),
-);
+  );
 
   const [mediaTarget, setMediaTarget] = useState<number | null>(null);
 
@@ -100,18 +101,18 @@ const [slides, setSlides] = useState<Slide[]>(
   };
 
   const save = () => {
-  updateCell({
-    ...cell,
-    slides: slides.map(slide => ({
-      ...slide,
-      elements: slide.elements.map(el => ({
-        ...el,
-        fontSize: el.fontSize ?? DefaultFontSize, 
+    updateCell({
+      ...cell,
+      slides: slides.map(slide => ({
+        ...slide,
+        elements: slide.elements.map(el => ({
+          ...el,
+          fontSize: el.fontSize ?? DefaultFontSize, 
+        })),
       })),
-    })),
-  });
-  close();
-};
+    });
+    close();
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={close}>
