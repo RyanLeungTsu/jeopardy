@@ -37,6 +37,8 @@ export interface Board {
   updatedAt: number;
 }
 
+const Default_Board = createEmptyBoard("Untitled Board");
+
 interface BoardState {
   editMode: boolean;
   setEditMode: (mode: boolean) => void;
@@ -115,6 +117,7 @@ export const useBoardStore = create<BoardState>((set, get) => {
   const savedBoards =
     typeof window !== "undefined"
       ? localStorage.getItem("jeopardyBoards")
+      
       : null;
   const boards: Board[] = savedBoards
     ? JSON.parse(savedBoards)
@@ -151,7 +154,7 @@ export const useBoardStore = create<BoardState>((set, get) => {
       if (!activeBoard) return;
 
       const newBoard: Board = {
-        ...activeBoard,
+        ...Default_Board,
         id: crypto.randomUUID(),
         name: name || "Untitled Board",
         createdAt: Date.now(),

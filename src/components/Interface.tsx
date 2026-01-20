@@ -45,6 +45,9 @@ const Interface: React.FC = () => {
 
       {profileOpen && (
         <div className="fixed right-16 top-1/4 w-64 bg-white border rounded shadow-lg p-4 z-50">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">
+            Current Board: {activeBoard?.name || "Untitled Board"}
+          </h2>
           <h2 className="font-bold mb-2 text-gray-900">My Boards</h2>
           {boards.length === 0 && (
             <p className="text-gray-900">No boards yet</p>
@@ -88,22 +91,22 @@ const Interface: React.FC = () => {
 
             {/* Rename n save as new */}
             <div className="mb-4">
-              <input
+              {/* <input
                 type="text"
                 value={boardName}
                 onChange={(e) => setBoardName(e.target.value)}
                 placeholder="New board name"
                 className="border w-full p-2 rounded text-gray-900"
-              />
+              /> */}
 
               <button
                 onClick={() => {
                   createBoard(boardName || "Untitled Board");
-                  setSaveModalOpen(false);
+                  setBoardName("");
                 }}
                 className="mt-2 w-full bg-green-500 text-white rounded px-3 py-1 hover:bg-green-600"
               >
-                Save as New
+                Create New Board
               </button>
             </div>
 
@@ -137,12 +140,30 @@ const Interface: React.FC = () => {
 
                         <button
                           onClick={() => {
-                            // Load this board and make it the activeBoard
                             setActiveBoard(board.id);
                           }}
                           className="px-2 py-1 bg-green-500 text-white rounded"
                         >
                           Load
+                        </button>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const newName = prompt(
+                              "Enter new board name",
+                              board.name,
+                            );
+                            if (!newName) return;
+                            updateActiveBoard({
+                              ...board,
+                              name: newName,
+                              updatedAt: Date.now(),
+                            });
+                          }}
+                          className="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                        >
+                          Rename
                         </button>
 
                         <button
