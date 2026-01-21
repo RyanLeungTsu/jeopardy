@@ -12,6 +12,7 @@ const Interface: React.FC = () => {
     createBoard,
     deleteBoard,
     editMode,
+    resetPlayedCells,
   } = useBoardStore();
 
   const [profileOpen, setProfileOpen] = useState(false);
@@ -35,6 +36,15 @@ const Interface: React.FC = () => {
   if (!activeBoard) return null;
   return (
     <>
+      <button
+        onClick={() => {
+          if (!confirm("Reset all cells to unplayed?")) return;
+          resetPlayedCells();
+        }}
+        className="fixed right-3 top-1/3 transform -translate-y-1/2 bg-yellow-500 text-white rounded px-3 py-1 hover:bg-yellow-600"
+      >
+        Reset Play Area
+      </button>
       {/* Profile tab */}
       <button
         onClick={() => setProfileOpen(!profileOpen)}
@@ -72,14 +82,14 @@ const Interface: React.FC = () => {
       )}
 
       {/* Save Board Button */}
-      {editMode && (
+      
         <button
           onClick={() => setSaveModalOpen(true)}
           className="fixed right-4 top-24 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 z-50"
         >
           My Boards
         </button>
-      )}
+      
 
       {/* Save modal */}
       {saveModalOpen && (

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { forwardRef } from "react";
 
 interface Props {
   onAdd: (type: "image" | "audio" | "video", content: string) => void;
@@ -17,47 +17,35 @@ const ALLOWED = {
   video: ["video/mp4", "video/webm"],
 };
 
-const MediaUploader: React.FC<Props> = ({ onAdd }) => {
+const MediaUploader = forwardRef<HTMLInputElement, Props>(({ onAdd }, ref) => {
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     let type: "image" | "audio" | "video" | null = null;
 
-    if (ALLOWED.image.includes(file.type)) type = "image";
-    else if (ALLOWED.audio.includes(file.type)) type = "audio";
-    else if (ALLOWED.video.includes(file.type)) type = "video";
+    if (file.type.startsWith("image/")) type = "image";
+    else if (file.type.startsWith("audio/")) type = "audio";
+    else if (file.type.startsWith("video/")) type = "video";
 
     if (!type) {
       alert("Unsupported file type");
       return;
     }
 
-    if (file.size > MAX_SIZE[type]) {
-      alert(
-        `File too large. Max for ${type}: ${MAX_SIZE[type] / 1024 / 1024}MB`,
-      );
-      return;
-    }
-
     const reader = new FileReader();
-    reader.onload = () => {
-      onAdd(type!, reader.result as string);
-    };
-
+    reader.onload = () => onAdd(type!, reader.result as string);
     reader.readAsDataURL(file);
   };
-  React.useEffect(() => {
-    document.getElementById("media-input")?.click();
-  }, []);
+
+  // React.useEffect(() => {
+  //   document.getElementById("media-input")?.click();
+  // }, []);
   return (
-    <input
-      type="file"
-      onChange={handleFile}
-      className="hidden"
-      id="media-input"
-    />
+    <input ref={ref} type="file" onChange={handleFile} className="hidden" />
   );
-};
+});
+
+MediaUploader.displayName = "MediaUploader";
 
 export default MediaUploader;

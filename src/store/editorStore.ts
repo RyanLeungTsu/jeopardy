@@ -8,6 +8,7 @@ export interface SlideElement {
   kind: ElementKind;
   content: string;
   fontSize?: number;
+  textAlign?: "left" | "center" | "right";
   x: number;
   y: number;
   width: number;
@@ -67,6 +68,8 @@ interface BoardState {
   // categories: string[];
   // setCategories: (cats: string[]) => void;
   setCategoryAt: (index: number, value: string) => void;
+
+  resetPlayedCells: () => void;
 }
 
 export function createEmptyBoard(name = ""): Board {
@@ -117,7 +120,6 @@ export const useBoardStore = create<BoardState>((set, get) => {
   const savedBoards =
     typeof window !== "undefined"
       ? localStorage.getItem("jeopardyBoards")
-      
       : null;
   const boards: Board[] = savedBoards
     ? JSON.parse(savedBoards)
@@ -147,6 +149,19 @@ export const useBoardStore = create<BoardState>((set, get) => {
         categories,
         updatedAt: Date.now(),
       });
+    },
+
+    resetPlayedCells: () => {
+      const { activeBoard, updateActiveBoard } = get();
+      if (!activeBoard) return;
+
+      const updatedBoard = {
+        ...activeBoard,
+        usedCells: {},
+        updatedAt: Date.now(),
+      };
+
+      updateActiveBoard(updatedBoard);
     },
 
     createBoard: (name) => {
