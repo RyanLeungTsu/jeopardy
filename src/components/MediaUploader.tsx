@@ -1,4 +1,5 @@
 import React, { forwardRef } from "react";
+import { saveMedia } from "../lib/mediaStorage";
 
 interface Props {
   onAdd: (type: "image" | "audio" | "video", content: string) => void;
@@ -18,7 +19,7 @@ const ALLOWED = {
 };
 
 const MediaUploader = forwardRef<HTMLInputElement, Props>(({ onAdd }, ref) => {
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -33,16 +34,43 @@ const MediaUploader = forwardRef<HTMLInputElement, Props>(({ onAdd }, ref) => {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => onAdd(type!, reader.result as string);
-    reader.readAsDataURL(file);
+    if (file.size > MAX_SIZE[type]) {
+      alert(`File too large. Maximum size for ${type}: ${MAX_SIZE[type] / 1024 / 1024}MB`);
+      return;
+    }
+
+    if (!ALLOWED[type].includes(file.type)) {
+      alert(`File type not allowed: ${file.type}`);
+      return;
+    }
+
+    try {
+      const mediaId = crypto.randomUUID();
+      
+      // this is for saving file as a blob to IndexDB
+      await saveMedia(mediaId, file);
+      
+      // Return the media ID with a prefix to indicate it's stored in IndexedDB, this is for telling it from old base64 data
+      onAdd(type, `idb://${mediaId}`);
+      
+      console.log(`Media uploaded successfully: ${mediaId}`);
+    } catch (error) {
+      console.error("Error saving media:", error);
+      alert("Failed to save media. Please try again.");
+    }
+
+    //This  Resets the input allowing same file to be uploaded
+    e.target.value = '';
   };
 
-  // React.useEffect(() => {
-  //   document.getElementById("media-input")?.click();
-  // }, []);
   return (
-    <input ref={ref} type="file" onChange={handleFile} className="hidden" />
+    <input 
+      ref={ref} 
+      type="file" 
+      accept="image/*,audio/*,video/*"
+      onChange={handleFile} 
+      className="hidden" 
+    />
   );
 });
 

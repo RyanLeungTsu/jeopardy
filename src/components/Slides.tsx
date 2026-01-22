@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Rnd } from "react-rnd";
 import {
   JeopardyCell,
@@ -7,7 +7,9 @@ import {
   SlideElement,
   DefaultFontSize,
 } from "../store/editorStore";
-import MediaUploader from "./MediaUploader";
+import MediaUploader from "../components/MediaUploader";
+import MediaDisplay from "../components/MediaDisplay";
+import { saveMedia } from "../lib/mediaStorage";
 import { useBoardStore } from "../store/editorStore";
 
 interface SlidesProps {
@@ -41,13 +43,13 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
     setSlides(updated);
   };
 
-  const handleMediaAdded = (url: string, type: "image" | "audio" | "video") => {
+  const handleMediaAdded = (type: "image" | "audio" | "video", mediaId: string) => {
     if (mediaTarget === null) return;
     const updated = [...slides];
     updated[mediaTarget].elements.push({
       id: crypto.randomUUID(),
       kind: type,
-      content: url,
+      content: mediaId,
       x: 50,
       y: 50,
       width: 200,
@@ -94,6 +96,56 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
     setEditing(false);
   };
 
+  useEffect(() => {
+    const handlePaste = async (e: ClipboardEvent) => {
+      if (!editing) return;
+
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+
+        if (item.type.startsWith('image/')) {
+          e.preventDefault(); 
+
+          const file = item.getAsFile();
+          if (!file) continue;
+
+          try {
+            const mediaId = crypto.randomUUID();
+            await saveMedia(mediaId, file);
+
+            const updated = [...slides];
+            updated[currentSlideIndex].elements.push({
+              id: crypto.randomUUID(),
+              kind: "image",
+              content: `idb://${mediaId}`,
+              x: 50,
+              y: 50,
+              width: 300,
+              height: 300,
+            });
+            setSlides(updated);
+
+            console.log(`Image pasted successfully: ${mediaId}`);
+          } catch (error) {
+            console.error("Error pasting image:", error);
+            alert("Failed to paste image. Please try again.");
+          }
+
+          break; 
+        }
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+
+    return () => {
+      window.removeEventListener('paste', handlePaste);
+    };
+  }, [editing, slides, currentSlideIndex]);
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-4 rounded w-[90vw] h-[85vh] max-w-[1400px] overflow-y-auto relative">
@@ -125,8 +177,9 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
                   bottomLeft: true,
                   topLeft: true,
                 }}
+                style={{ boxSizing: "border-box" }}
               >
-                <div className="border bg-white h-full relative group">
+                <div className="border bg-white h-full relative group" style={{ boxSizing: "border-box" }}>
                   {el.kind === "text" && (
                     <>
                       <div
@@ -141,6 +194,7 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
                         style={{
                           fontSize: el.fontSize ?? DefaultFontSize,
                           textAlign: el.textAlign ?? "left",
+                          boxSizing: "border-box",
                         }}
                         onMouseDown={(e) => e.stopPropagation()}
                         onChange={(e) =>
@@ -209,35 +263,16 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
 
                   {el.kind !== "text" && (
                     <div className="drag-handle relative w-full h-full">
-                      {el.kind === "image" && (
-                        <img
-                          src={el.content}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "contain",
-                            pointerEvents: "none",
-                          }}
-                        />
-                      )}
-                      {el.kind === "audio" && (
-                        <audio
-                          controls
-                          src={el.content}
-                          style={{ width: "100%" }}
-                        />
-                      )}
-                      {el.kind === "video" && (
-                        <video
-                          controls
-                          src={el.content}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            pointerEvents: "none",
-                          }}
-                        />
-                      )}
+                      <MediaDisplay
+                        element={el}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "contain",
+                          pointerEvents: "none",
+                          display: "block",
+                        }}
+                      />
                       <button
                         onClick={() => removeElement(el.id)}
                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 hover:bg-red-600"
@@ -276,10 +311,18 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
                   </div>
                 )}
                 {el.kind === "image" && (
-                  <img src={el.content} className="max-w-full" />
+                  <MediaDisplay
+                    element={el}
+                    className="max-w-full"
+                    style={{ display: "block" }}
+                  />
                 )}
-                {el.kind === "audio" && <audio controls src={el.content} />}
-                {el.kind === "video" && <video controls src={el.content} />}
+                {el.kind === "audio" && (
+                  <MediaDisplay element={el} />
+                )}
+                {el.kind === "video" && (
+                  <MediaDisplay element={el} />
+                )}
               </div>
             ),
           )}
@@ -386,7 +429,7 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
 
         <MediaUploader
           ref={mediaInputRef}
-          onAdd={(type, content) => handleMediaAdded(content, type)}
+          onAdd={(type, mediaId) => handleMediaAdded(type, mediaId)}
         />
         <button
           onClick={close}
