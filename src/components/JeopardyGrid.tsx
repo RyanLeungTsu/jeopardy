@@ -1,6 +1,6 @@
 "use client";
 import { useBoardStore } from "../store/editorStore";
-import Slides from "./Slides"; // your new unified component
+import Slides from "./Slides"; 
 
 const BoardGrid: React.FC = () => {
   const {
