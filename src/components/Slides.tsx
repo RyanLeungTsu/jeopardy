@@ -42,8 +42,11 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
     );
     setSlides(updated);
   };
-
-  const handleMediaAdded = (type: "image" | "audio" | "video", mediaId: string) => {
+  // const for adding media
+  const handleMediaAdded = (
+    type: "image" | "audio" | "video",
+    mediaId: string,
+  ) => {
     if (mediaTarget === null) return;
     const updated = [...slides];
     updated[mediaTarget].elements.push({
@@ -58,7 +61,7 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
     setSlides(updated);
     setMediaTarget(null);
   };
-
+  // Const for deleting slides
   const deleteCurrentSlide = () => {
     if (slides.length <= 1) return;
 
@@ -72,7 +75,7 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
     setSlides(updatedSlides);
     setCurrentSlideIndex(newIndex);
   };
-
+  // const for removing elements
   const removeElement = (elementId: string) => {
     const updated = slides.map((slide, idx) =>
       idx === currentSlideIndex
@@ -85,15 +88,14 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
     setSlides(updated);
   };
 
-  const nextSlide = () => {
-    if (currentSlideIndex < slides.length - 1)
-      setCurrentSlideIndex(currentSlideIndex + 1);
-    else close();
-  };
+  // const nextSlide = () => {
+  //   if (currentSlideIndex < slides.length - 1)
+  //     setCurrentSlideIndex(currentSlideIndex + 1);
+  //   else close();
+  // };
 
   const saveChanges = () => {
     updateCell({ ...cell, slides });
-    setEditing(false);
   };
 
   useEffect(() => {
@@ -106,8 +108,8 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
 
-        if (item.type.startsWith('image/')) {
-          e.preventDefault(); 
+        if (item.type.startsWith("image/")) {
+          e.preventDefault();
 
           const file = item.getAsFile();
           if (!file) continue;
@@ -134,15 +136,15 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
             alert("Failed to paste image. Please try again.");
           }
 
-          break; 
+          break;
         }
       }
     };
 
-    window.addEventListener('paste', handlePaste);
+    window.addEventListener("paste", handlePaste);
 
     return () => {
-      window.removeEventListener('paste', handlePaste);
+      window.removeEventListener("paste", handlePaste);
     };
   }, [editing, slides, currentSlideIndex]);
 
@@ -179,15 +181,19 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
                 }}
                 style={{ boxSizing: "border-box" }}
               >
-                <div className="border bg-white h-full relative group" style={{ boxSizing: "border-box" }}>
+                <div
+                  className="border bg-white h-full relative group"
+                  style={{ boxSizing: "border-box" }}
+                >
                   {el.kind === "text" && (
                     <>
                       <div
-                        className="drag-handle absolute top-1 right-1 w-6 h-6 bg-gray-300 flex items-center justify-center cursor-move z-20"
+                        className="drag-handle absolute bottom-1 right-1 w-6 h-6 bg-gray-300 flex items-center justify-center cursor-move z-20"
                         title="Drag"
                       >
                         ↕
                       </div>
+
                       <textarea
                         className="w-full h-full resize-none bg-transparent text-black p-1"
                         value={el.content}
@@ -257,6 +263,13 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
                         >
                           ➡
                         </button>
+                        <button
+                          onClick={() => removeElement(el.id)}
+                          className="bg-red-500 text-white p-1 rounded text-xs hover:bg-red-600"
+                          title="Delete Text Box"
+                        >
+                          ✕
+                        </button>
                       </div>
                     </>
                   )}
@@ -270,9 +283,21 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
                           height: "100%",
                           objectFit: "contain",
                           pointerEvents: "none",
+                          maxWidth: "none",
+                          maxHeight: "none",
                           display: "block",
                         }}
                       />
+                      {/* <MediaDisplay
+                        element={el}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "fill",
+                          pointerEvents: "none",
+                          display: "block",
+                        }}
+                      /> */}
                       <button
                         onClick={() => removeElement(el.id)}
                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 hover:bg-red-600"
@@ -313,16 +338,18 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
                 {el.kind === "image" && (
                   <MediaDisplay
                     element={el}
-                    className="max-w-full"
-                    style={{ display: "block" }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain",
+                      maxWidth: "none",
+                      maxHeight: "none",
+                      display: "block",
+                    }}
                   />
                 )}
-                {el.kind === "audio" && (
-                  <MediaDisplay element={el} />
-                )}
-                {el.kind === "video" && (
-                  <MediaDisplay element={el} />
-                )}
+                {el.kind === "audio" && <MediaDisplay element={el} />}
+                {el.kind === "video" && <MediaDisplay element={el} />}
               </div>
             ),
           )}
@@ -330,7 +357,10 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
 
         {/*Exit button for slide ui */}
         <button
-          onClick={close}
+          onClick={() => {
+            saveChanges();
+            close();
+          }}
           className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-red-500 text-white rounded-full hover:bg-red-600 z-50"
           title="Close"
         >
@@ -338,6 +368,7 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
         </button>
 
         {/* Controls */}
+        {/* Button for adding a slide */}
         {editing && (
           <button
             onClick={() => {
@@ -367,7 +398,7 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
             + Add Slide
           </button>
         )}
-
+        {/* Button for deleting a slide */}
         {editing && slides.length > 1 && (
           <button
             onClick={deleteCurrentSlide}
@@ -376,15 +407,15 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
             Delete Slide
           </button>
         )}
-
+        {/* Toggle for editing and non-editing for slides */}
         <div className="flex justify-between mb-2">
           <button
             onClick={() => setEditing(!editing)}
             className={`px-4 py-2 rounded ${editing ? "bg-green-500" : "bg-blue-500"} text-white`}
           >
-            {editing ? "Editing Slide" : "Play Mode"}
+            {editing ? "Editing" : "Playing"}
           </button>
-
+          {/* Add media button for slides */}
           {editing && (
             <button
               onClick={() => {
@@ -397,6 +428,26 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
             </button>
           )}
         </div>
+        {/* Adding more text boxes than default */}
+        <button
+          onClick={() => {
+            const updated = [...slides];
+            updated[currentSlideIndex].elements.push({
+              id: crypto.randomUUID(),
+              kind: "text",
+              content: "",
+              x: 100,
+              y: 100,
+              width: 200,
+              height: 100,
+              fontSize: DefaultFontSize,
+            });
+            setSlides(updated);
+          }}
+          className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Text Box +
+        </button>
 
         <div className="flex justify-between">
           <button
@@ -407,14 +458,6 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
           >
             ◀ Prev
           </button>
-          {editing && (
-            <button
-              onClick={saveChanges}
-              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              Save
-            </button>
-          )}
           <button
             onClick={() => {
               if (currentSlideIndex < slides.length - 1) {
@@ -431,12 +474,12 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
           ref={mediaInputRef}
           onAdd={(type, mediaId) => handleMediaAdded(type, mediaId)}
         />
-        <button
+        {/* <button
           onClick={close}
           className="absolute top-4 right-4 text-white hover:text-gray-900"
         >
           X
-        </button>
+        </button> */}
       </div>
     </div>
   );

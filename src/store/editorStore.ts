@@ -64,6 +64,10 @@ interface BoardState {
   addColumn: () => void;
   removeRow: () => void;
   removeColumn: () => void;
+  addRowAt: (rowIndex: number) => void;
+  removeRowAt: (rowIndex: number) => void;
+  addColumnAt: (colIndex: number) => void;
+  removeColumnAt: (colIndex: number) => void;
 
   // categories: string[];
   // setCategories: (cats: string[]) => void;
@@ -281,6 +285,7 @@ export const useBoardStore = create<BoardState>((set, get) => {
 
     rows: boards[0].rows,
     columns: boards[0].columns,
+
     addRow: () => {
       const { activeBoard } = get();
       if (!activeBoard) return;
@@ -383,6 +388,140 @@ export const useBoardStore = create<BoardState>((set, get) => {
         cells: updatedCells,
         columns: activeBoard.columns - 1,
         categories: activeBoard.categories.slice(0, -1),
+        updatedAt: Date.now(),
+      });
+    },
+addRowAt: (rowIndex: number) => {
+      const { activeBoard } = get();
+      if (!activeBoard) return;
+
+      const newCells = activeBoard.cells.map((cell) => {
+        if (cell.row > rowIndex) {
+          return { ...cell, row: cell.row + 1 };
+        }
+        return cell;
+      });
+
+      for (let c = 0; c < activeBoard.columns; c++) {
+        newCells.push({
+          row: rowIndex + 1,
+          col: c,
+          points: (rowIndex + 2) * 100,
+          slides: [
+            {
+              elements: [
+                {
+                  id: crypto.randomUUID(),
+                  kind: "text",
+                  content: "",
+                  x: 20,
+                  y: 20,
+                  width: 200,
+                  height: 200,
+                  fontSize: DefaultFontSize,
+                },
+              ],
+            },
+          ],
+        });
+      }
+
+      get().updateActiveBoard({
+        ...activeBoard,
+        cells: newCells,
+        rows: activeBoard.rows + 1,
+        updatedAt: Date.now(),
+      });
+    },
+
+    removeRowAt: (rowIndex: number) => {
+      const { activeBoard } = get();
+      if (!activeBoard || activeBoard.rows <= 1) return;
+
+      const updatedCells = activeBoard.cells
+        .filter((c) => c.row !== rowIndex)
+        .map((cell) => {
+          if (cell.row > rowIndex) {
+            return { ...cell, row: cell.row - 1 };
+          }
+          return cell;
+        });
+
+      get().updateActiveBoard({
+        ...activeBoard,
+        cells: updatedCells,
+        rows: activeBoard.rows - 1,
+        updatedAt: Date.now(),
+      });
+    },
+
+    addColumnAt: (colIndex: number) => {
+      const { activeBoard } = get();
+      if (!activeBoard) return;
+
+      const newCells = activeBoard.cells.map((cell) => {
+        if (cell.col > colIndex) {
+          return { ...cell, col: cell.col + 1 };
+        }
+        return cell;
+      });
+
+      for (let r = 0; r < activeBoard.rows; r++) {
+        newCells.push({
+          row: r,
+          col: colIndex + 1,
+          points: (r + 1) * 100,
+          slides: [
+            {
+              elements: [
+                {
+                  id: crypto.randomUUID(),
+                  kind: "text",
+                  content: "",
+                  x: 20,
+                  y: 20,
+                  width: 200,
+                  height: 200,
+                  fontSize: DefaultFontSize,
+                },
+              ],
+            },
+          ],
+        });
+      }
+
+      const newCategories = [...activeBoard.categories];
+      newCategories.splice(colIndex + 1, 0, "Category");
+
+      get().updateActiveBoard({
+        ...activeBoard,
+        cells: newCells,
+        columns: activeBoard.columns + 1,
+        categories: newCategories,
+        updatedAt: Date.now(),
+      });
+    },
+
+    removeColumnAt: (colIndex: number) => {
+      const { activeBoard } = get();
+      if (!activeBoard || activeBoard.columns <= 1) return;
+
+      const updatedCells = activeBoard.cells
+        .filter((c) => c.col !== colIndex)
+        .map((cell) => {
+          if (cell.col > colIndex) {
+            return { ...cell, col: cell.col - 1 };
+          }
+          return cell;
+        });
+
+      const newCategories = activeBoard.categories.filter((_, i) => i !== colIndex);
+
+      get().updateActiveBoard({
+        ...activeBoard,
+        cells: updatedCells,
+        columns: activeBoard.columns - 1,
+        categories: newCategories,
         updatedAt: Date.now(),
       });
     },

@@ -12,6 +12,7 @@ const Interface: React.FC = () => {
     createBoard,
     deleteBoard,
     editMode,
+    setEditMode,
     resetPlayedCells,
   } = useBoardStore();
 
@@ -19,39 +20,46 @@ const Interface: React.FC = () => {
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [boardName, setBoardName] = useState("");
 
-  {
-    editMode && (
-      <button
-        onClick={() => {
-          setBoardName(activeBoard?.name || "Untitled Board");
-          setSaveModalOpen(true);
-        }}
-        className="fixed right-4 top-24 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 z-50"
-      >
-        Save Board
-      </button>
-    );
-  }
-
   if (!activeBoard) return null;
   return (
     <>
-      <button
-        onClick={() => {
-          if (!confirm("Reset all cells to unplayed?")) return;
-          resetPlayedCells();
-        }}
-        className="fixed right-3 top-1/3 transform -translate-y-1/2 bg-yellow-500 text-white rounded px-3 py-1 hover:bg-yellow-600"
-      >
-        Reset Play Area
-      </button>
-      {/* Profile tab */}
-      <button
-        onClick={() => setProfileOpen(!profileOpen)}
-        className="fixed right-4 top-1/2 transform -translate-y-1/2 px-3 py-2 bg-purple-500 text-white rounded shadow-lg z-50"
-      >
-        Profile
-      </button>
+      {/* Ui for the buttons (stackin on the right side)*/}
+      <div className="fixed right-4 top-1/2 transform -translate-y-1/2 flex flex-col gap-3 z-50">
+        <button
+          onClick={() => setEditMode(!editMode)}
+          className={`px-4 py-2 rounded shadow-lg ${
+            editMode
+              ? "bg-green-500 hover:bg-green-600"
+              : "bg-gray-500 hover:bg-gray-600"
+          } text-white`}
+        >
+          {editMode ? "Edit" : "Play"}
+        </button>
+
+        <button
+          onClick={() => {
+            if (!confirm("Reset all cells to unplayed?")) return;
+            resetPlayedCells();
+          }}
+          className="px-4 py-2 bg-yellow-500 text-white rounded shadow-lg hover:bg-yellow-600"
+        >
+          Reset Play Area
+        </button>
+
+        <button
+          onClick={() => setProfileOpen(!profileOpen)}
+          className="px-4 py-2 bg-purple-500 text-white rounded shadow-lg hover:bg-purple-600"
+        >
+          Profile
+        </button>
+
+        <button
+          onClick={() => setSaveModalOpen(true)}
+          className="px-4 py-2 bg-blue-500 text-white rounded shadow-lg hover:bg-blue-600"
+        >
+          My Boards
+        </button>
+      </div>
 
       {profileOpen && (
         <div className="fixed right-16 top-1/4 w-64 bg-white border rounded shadow-lg p-4 z-50">
@@ -81,17 +89,6 @@ const Interface: React.FC = () => {
         </div>
       )}
 
-      {/* Save Board Button */}
-      
-        <button
-          onClick={() => setSaveModalOpen(true)}
-          className="fixed right-4 top-24 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 z-50"
-        >
-          My Boards
-        </button>
-      
-
-      {/* Save modal */}
       {saveModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-4 rounded w-[90vw] max-w-[600px]">
@@ -99,16 +96,7 @@ const Interface: React.FC = () => {
               Current Board
             </h2>
 
-            {/* Rename n save as new */}
             <div className="mb-4">
-              {/* <input
-                type="text"
-                value={boardName}
-                onChange={(e) => setBoardName(e.target.value)}
-                placeholder="New board name"
-                className="border w-full p-2 rounded text-gray-900"
-              /> */}
-
               <button
                 onClick={() => {
                   createBoard(boardName || "Untitled Board");
@@ -120,7 +108,6 @@ const Interface: React.FC = () => {
               </button>
             </div>
 
-            {/* Existing Boards */}
             {boards.length > 0 && (
               <div>
                 <h3 className="font-semibold mb-2 text-gray-900">My Boards</h3>
