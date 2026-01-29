@@ -33,7 +33,7 @@ const Interface: React.FC = () => {
               : "bg-gray-500 hover:bg-gray-600"
           } text-white`}
         >
-          {editMode ? "Edit" : "Play"}
+          {editMode ? "Save" : "Edit"}
         </button>
 
         <button

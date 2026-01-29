@@ -149,9 +149,9 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
   }, [editing, slides, currentSlideIndex]);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-4 rounded w-[90vw] h-[85vh] max-w-[1400px] overflow-y-auto relative">
-        <div className="relative w-full h-[70vh] border mb-4">
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-10 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white p-4 rounded w-[90vw] h-[90vh] max-w-[1400px] overflow-y-auto relative">
+        <div className="relative w-full h-[70vh] bg-white border-3 border-blue-400 mb-4">
           {currentSlide.elements.map((el) =>
             editing ? (
               <Rnd
@@ -361,60 +361,94 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
             saveChanges();
             close();
           }}
-          className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-red-500 text-white rounded-full hover:bg-red-600 z-50"
+          className="rounded-full absolute top-2 right-2 w-10 h-10 inline-flex items-center justify-center p-[-2] overflow-hidden text-sm font-extrabold group   text-red-500 hover:text-white focus:outline-none focus:ring-0"
           title="Close"
         >
-          ✕
+          <span className="relative px-4 py-2.5 transition-all ease-in duration-75 bg-white group-hover:bg-transparent">
+            ✕
+          </span>
         </button>
 
         {/* Controls */}
-        {/* Button for adding a slide */}
-        {editing && (
+        <div className="flex justify-center mb-2">
+          
+          {/* Prev Slide Button */}
           <button
-            onClick={() => {
-              const newSlide: Slide = {
-                elements: [
-                  {
-                    id: crypto.randomUUID(),
-                    kind: "text",
-                    content: "",
-                    x: 20,
-                    y: 20,
-                    width: 200,
-                    height: 100,
-                    fontSize: DefaultFontSize,
-                  },
-                ],
-              };
-
-              const updatedSlides = [...slides];
-              updatedSlides.splice(currentSlideIndex + 1, 0, newSlide);
-
-              setSlides(updatedSlides);
-              setCurrentSlideIndex(currentSlideIndex + 1);
-            }}
-            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 mb-2"
+            onClick={() =>
+              setCurrentSlideIndex(Math.max(currentSlideIndex - 1, 0))
+            }
+            className="ml-4 mr-4 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold text-heading group bg-gradient-to-br from-blue-700 to-teal-200  text-blue-500 hover:text-white focus:outline-none focus:ring-0"
           >
-            + Add Slide
+            <span className="relative px-4 py-2.5 transition-all ease-in duration-75 bg-white group-hover:bg-transparent">
+              Prev
+            </span>
           </button>
-        )}
-        {/* Button for deleting a slide */}
-        {editing && slides.length > 1 && (
-          <button
-            onClick={deleteCurrentSlide}
-            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            Delete Slide
-          </button>
-        )}
-        {/* Toggle for editing and non-editing for slides */}
-        <div className="flex justify-between mb-2">
+          {/* Toggle for editing and non-editing for slides */}
           <button
             onClick={() => setEditing(!editing)}
-            className={`px-4 py-2 rounded ${editing ? "bg-green-500" : "bg-blue-500"} text-white`}
+            className={`ml-3 mr-3 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold group ${editing ? "bg-gradient-to-br from-yellow-400 to-red-400" : "bg-gradient-to-br from-orange-500 to-purple-500"} ${editing ? "text-orange-600" : "text-orange-400"}  focus:outline-none focus:ring-0  hover:text-white `}
           >
-            {editing ? "Editing" : "Playing"}
+            <span className="relative px-4 py-2.5 transition-all ease-in duration-75 bg-white group-hover:bg-transparent">
+              {editing ? "Save" : "Edit"}
+            </span>
           </button>
+          {/* Next slide button */}
+          <button
+            onClick={() => {
+              if (currentSlideIndex < slides.length - 1) {
+                setCurrentSlideIndex(currentSlideIndex + 1);
+              }
+            }}
+            className="ml-4 mr-4 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold text-heading group bg-gradient-to-br from-blue-700 to-teal-200  text-blue-500 hover:text-white focus:outline-none focus:ring-0"
+          >
+            <span className="relative px-4 py-2.5 transition-all ease-in duration-75 bg-white group-hover:bg-transparent">
+              Next
+            </span>
+          </button>
+          {/* Button for adding a slide */}
+          {editing && (
+            <button
+              onClick={() => {
+                const newSlide: Slide = {
+                  elements: [
+                    {
+                      id: crypto.randomUUID(),
+                      kind: "text",
+                      content: "",
+                      x: 20,
+                      y: 20,
+                      width: 200,
+                      height: 100,
+                      fontSize: DefaultFontSize,
+                    },
+                  ],
+                };
+
+                const updatedSlides = [...slides];
+                updatedSlides.splice(currentSlideIndex + 1, 0, newSlide);
+
+                setSlides(updatedSlides);
+                setCurrentSlideIndex(currentSlideIndex + 1);
+              }}
+              className="ml-3 mr-3 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold group bg-gradient-to-br from-teal-300 to-lime-400  text-teal-500 hover:text-white focus:outline-none focus:ring-0"
+            >
+              <span className="relative px-4 py-2.5 transition-all ease-in duration-75 bg-white group-hover:bg-transparent">
+                Add Slide
+              </span>
+            </button>
+          )}
+          {/* Button for deleting a slide */}
+          {editing && slides.length > 1 && (
+            <button
+              onClick={deleteCurrentSlide}
+              className="ml-3 mr-3 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold text-heading group bg-gradient-to-br from-red-600 to-orange-300  text-red-700 hover:text-white focus:outline-none focus:ring-0"
+            >
+              <span className="relative px-4 py-2.5 transition-all ease-in duration-75 bg-white group-hover:bg-transparent">
+                Delete Slide
+              </span>
+            </button>
+          )}
+
           {/* Add media button for slides */}
           {editing && (
             <button
@@ -422,64 +456,44 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
                 setMediaTarget(currentSlideIndex);
                 setTimeout(() => mediaInputRef.current?.click(), 0);
               }}
-              className="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600"
+              className="ml-3 mr-3 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold text-heading group bg-gradient-to-br from-purple-700 to-pink-400  text-purple-500 hover:text-white focus:outline-none focus:ring-0"
             >
-              Add Media
+              <span className="relative px-4 py-2.5 transition-all ease-in duration-75 bg-white group-hover:bg-transparent">
+                Add Media
+              </span>
             </button>
           )}
-        </div>
-        {/* Adding more text boxes than default */}
-        <button
-          onClick={() => {
-            const updated = [...slides];
-            updated[currentSlideIndex].elements.push({
-              id: crypto.randomUUID(),
-              kind: "text",
-              content: "",
-              x: 100,
-              y: 100,
-              width: 200,
-              height: 100,
-              fontSize: DefaultFontSize,
-            });
-            setSlides(updated);
-          }}
-          className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Text Box +
-        </button>
 
-        <div className="flex justify-between">
-          <button
-            onClick={() =>
-              setCurrentSlideIndex(Math.max(currentSlideIndex - 1, 0))
-            }
-            className="px-3 py-1 border rounded bg-blue-500 hover:bg-blue-600"
-          >
-            ◀ Prev
-          </button>
-          <button
-            onClick={() => {
-              if (currentSlideIndex < slides.length - 1) {
-                setCurrentSlideIndex(currentSlideIndex + 1);
-              }
-            }}
-            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Next ▶
-          </button>
+          {/* Adding more text boxes than default */}
+          {editing && (
+            <button
+              onClick={() => {
+                const updated = [...slides];
+                updated[currentSlideIndex].elements.push({
+                  id: crypto.randomUUID(),
+                  kind: "text",
+                  content: "",
+                  x: 100,
+                  y: 100,
+                  width: 200,
+                  height: 100,
+                  fontSize: DefaultFontSize,
+                });
+                setSlides(updated);
+              }}
+              className="ml-3 mr-3 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold text-heading group bg-gradient-to-br from-blue-700 to-teal-200  text-teal-500 hover:text-white focus:outline-none focus:ring-0"
+            >
+              <span className="relative px-4 py-2.5 transition-all ease-in duration-75 bg-white group-hover:bg-transparent">
+                Add Text
+              </span>
+            </button>
+          )}
         </div>
 
         <MediaUploader
           ref={mediaInputRef}
           onAdd={(type, mediaId) => handleMediaAdded(type, mediaId)}
         />
-        {/* <button
-          onClick={close}
-          className="absolute top-4 right-4 text-white hover:text-gray-900"
-        >
-          X
-        </button> */}
       </div>
     </div>
   );
