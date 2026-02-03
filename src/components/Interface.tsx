@@ -65,69 +65,94 @@ const Interface: React.FC = () => {
     );
   };
 
+  const [expanded, setExpanded] = useState(true);
+
   if (!activeBoard) return null;
   return (
     <>
       {/* left side ui for players */}
-      <div className="fixed left-4 top-1/2 transform -translate-y-1/2 w-50 bg-white rounded-lg shadow-xl p-4 z-100">
-        <h2 className="text-xl font-bold text-gray-900 mb-4 text-center">
-          Players
-        </h2>
-
-        <div className="space-y-3 max-h-[70vh] overflow-y-auto">
-          {players.map((player, index) => (
-            <div
-              key={player.id}
-              className="bg-gray-50 rounded-lg p-3 border border-gray-200"
-            >
-              <div className="mb-2">
-                {/* min-w-0 to shrink into flex container */}
-                <div className="flex items-center gap-2 min-w-0">
-                  <input
-                    type="text"
-                    value={player.name}
-                    onChange={(e) => updatePlayerName(index, e.target.value)}
-                    className="flex-1 min-w-0 text-sm font-semibold text-gray-900 bg-transparent border-none outline-none"
-                    placeholder="Player name"
-                  />
-
-                  {players.length > 1 && (
-                    <button
-                      onClick={() => removePlayer(index)}
-                      className="shrink-0 text-red-500 hover:text-red-700 text-xs"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              </div>
-              <input
-                type="text"
-                inputMode="numeric"
-                value={player.score}
-                onChange={(e) => updatePlayerScore(index, e.target.value)}
-                className="
-    w-full text-gray-700 text-2xl font-bold text-center
-    bg-white rounded px-2 py-1 border border-gray-300
-    focus:outline-none focus:ring-2 focus:ring-blue-500
-    appearance-none
-  "
-              />
-            </div>
-          ))}
-        </div>
-
-        {players.length < 10 && (
+      {expanded && (
+        <div className="fixed left-4 top-1/2 transform -translate-y-1/2 w-50 bg-white rounded-lg shadow-xl p-4 z-100">
           <button
-            onClick={addPlayer}
-            className="w-40 ml-1 mr-1 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold text-heading group bg-gradient-to-br from-lime-400 to-teal-300  text-green-500 hover:text-white focus:outline-none focus:ring-0"
+            onClick={() => setExpanded(false)}
+            className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-sm"
+            title="Minimize"
           >
-            <span className="w-full relative px-6 py-3 transition-all ease-in duration-350 bg-gray-100 group-hover:bg-transparent">
-              Add Player
-            </span>
+            —
           </button>
-        )}
-      </div>
+
+          <h2 className="text-xl font-bold text-gray-900 mb-4 text-center">
+            Players
+          </h2>
+
+          <div className="space-y-3 max-h-[70vh] overflow-y-auto">
+            {players.map((player, index) => (
+              <div
+                key={player.id}
+                className="bg-gray-50 rounded-lg p-3 border border-gray-200"
+              >
+                <div className="mb-2">
+                  {/* min-w-0 to shrink into flex container */}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <input
+                      type="text"
+                      value={player.name}
+                      onChange={(e) => updatePlayerName(index, e.target.value)}
+                      className="flex-1 min-w-0 text-sm font-semibold text-gray-900 bg-transparent border-none outline-none"
+                      placeholder="Player name"
+                    />
+
+                    {players.length > 1 && (
+                      <button
+                        onClick={() => removePlayer(index)}
+                        className="shrink-0 text-red-500 hover:text-red-700 text-xs"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={player.score}
+                  onChange={(e) => updatePlayerScore(index, e.target.value)}
+                  className="
+                w-full text-gray-700 text-2xl font-bold text-center
+                bg-white rounded px-2 py-1 border border-gray-300
+                focus:outline-none focus:ring-2 focus:ring-blue-500
+                appearance-none
+                "
+                />
+              </div>
+            ))}
+          </div>
+
+          {players.length < 10 && (
+            <button
+              onClick={addPlayer}
+              className="w-40 ml-1 mr-1 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold text-heading group bg-gradient-to-br from-lime-400 to-teal-300  text-green-500 hover:text-white focus:outline-none focus:ring-0"
+            >
+              <span className="w-full relative px-6 py-3 transition-all ease-in duration-350 bg-gray-100 group-hover:bg-transparent">
+                Add Player
+              </span>
+            </button>
+          )}
+        </div>
+      )}
+
+      {!expanded && (
+        <button
+          onClick={() => setExpanded(true)}
+          className="fixed left-4 top-1/2 w-30 ml-1 mr-1 inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold text-heading group bg-gradient-to-br from-lime-400 to-teal-300  text-green-500 hover:text-white focus:outline-none focus:ring-0"
+        >
+          <span className=" w-full relative px-8 py-3 transition-all ease-in duration-350 bg-gray-100 group-hover:bg-transparent">
+            Players
+          </span>
+        </button>
+      )}
+
       {/* Ui for the buttons (stackin on the right side)*/}
       <div className="fixed right-4 top-1/2 transform -translate-y-1/2 flex flex-col gap-3 z-50">
         <button

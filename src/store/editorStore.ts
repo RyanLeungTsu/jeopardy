@@ -127,21 +127,15 @@ export const useBoardStore = create<BoardState>((set, get) => {
     typeof window !== "undefined"
       ? localStorage.getItem("jeopardyBoards")
       : null;
-  const boards: Board[] = savedBoards
-    ? JSON.parse(savedBoards)
-    : [createEmptyBoard()];
+  const boards: Board[] = savedBoards ? JSON.parse(savedBoards) : [];
 
   return {
     editMode: false,
     setEditMode: (mode: boolean) => set({ editMode: mode }),
 
     boards,
-    activeBoardId: boards[0].id,
-    activeBoard: boards[0],
-    // get activeBoard() {
-    //   const { boards, activeBoardId } = get();
-    //   return boards.find((b) => b.id === activeBoardId) || null;
-    // },
+    activeBoardId: boards.length > 0 ? boards[0].id : null,
+    activeBoard: boards.length > 0 ? boards[0] : null,
 
     setCategoryAt: (index: number, value: string) => {
       const { activeBoard } = get();
@@ -196,21 +190,6 @@ export const useBoardStore = create<BoardState>((set, get) => {
         boards: updatedBoards,
       });
     },
-
-    // setActiveBoard: (id) => set({ activeBoardId: id }),
-
-    // updateActiveBoard: (updatedBoard) => {
-    //   set((state) => {
-    //     const updatedBoards = state.boards.map((b) =>
-    //       b.id === updatedBoard.id ? updatedBoard : b,
-    //     );
-    //     localStorage.setItem("jeopardyBoards", JSON.stringify(updatedBoards));
-    //     return {
-    //       boards: updatedBoards,
-    //       activeBoardId: updatedBoard.id,
-    //     };
-    //   });
-    // },
 
     setActiveBoard: (id) =>
       set((state) => ({
@@ -281,24 +260,9 @@ export const useBoardStore = create<BoardState>((set, get) => {
     selectedCell: null,
     selectCell: (cell) => set({ selectedCell: cell }),
 
-    // updateCell: (updated) => {
-    //   set({ stagedCell: updated });
-    //   const { activeBoard } = get();
-    //   if (!activeBoard) return;
-    //   const newCells = activeBoard.cells.map((c) =>
-    //     c.row === updated.row && c.col === updated.col ? updated : c,
-    //   );
-    //   const updatedBoard = {
-    //     ...activeBoard,
-    //     cells: newCells,
-    //     updatedAt: Date.now(),
-    //   };
-    //   get().updateActiveBoard(updatedBoard);
-    // },
-
     updateCell: (updated) => {
-  set({ stagedCell: updated });
-},
+      set({ stagedCell: updated });
+    },
 
     markCellUsed: (cell) => {
       const { activeBoard } = get();
@@ -312,8 +276,8 @@ export const useBoardStore = create<BoardState>((set, get) => {
       get().updateActiveBoard(updatedBoard);
     },
 
-    rows: boards[0].rows,
-    columns: boards[0].columns,
+    rows: boards[0]?.rows ?? 0,
+    columns: boards[0]?.columns ?? 0,
 
     addRow: () => {
       const { activeBoard } = get();
@@ -555,6 +519,21 @@ export const useBoardStore = create<BoardState>((set, get) => {
         categories: newCategories,
         updatedAt: Date.now(),
       });
+      if (typeof window !== "undefined") {
+        const store = useBoardStore.getState();
+        if (store.boards.length === 0) {
+          const defaultBoard = createEmptyBoard("Untitled Board");
+          useBoardStore.setState({
+            boards: [defaultBoard],
+            activeBoardId: defaultBoard.id,
+            activeBoard: defaultBoard,
+          });
+          localStorage.setItem(
+            "jeopardyBoards",
+            JSON.stringify([defaultBoard]),
+          );
+        }
+      }
     },
   };
 });

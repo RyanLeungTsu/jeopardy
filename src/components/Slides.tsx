@@ -98,16 +98,6 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
     savedSlide(true);
   };
 
-  // const nextSlide = () => {
-  //   if (currentSlideIndex < slides.length - 1)
-  //     setCurrentSlideIndex(currentSlideIndex + 1);
-  //   else close();
-  // };
-
-  // const saveChanges = () => {
-  //   updateCell({ ...cell, slides });
-  // };
-
   useEffect(() => {
     const handlePaste = async (e: ClipboardEvent) => {
       if (!editing) return;
