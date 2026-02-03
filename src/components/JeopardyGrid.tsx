@@ -24,12 +24,15 @@ const JeopardyGrid: React.FC = () => {
       <div className="relative">
         {editMode && (
           <>
-            <div className="absolute top-0 left-0 right-0 flex" style={{ marginTop: '-30px' }}>
+            <div
+              className="absolute top-0 left-0 right-0 flex"
+              style={{ marginTop: "-30px" }}
+            >
               {activeBoard.categories.map((_, i) => (
                 <div
                   key={`col-btn-${i}`}
                   className="flex gap-1 items-center justify-end pr-1"
-                  style={{ 
+                  style={{
                     width: `${100 / activeBoard.columns}%`,
                   }}
                 >
@@ -51,12 +54,19 @@ const JeopardyGrid: React.FC = () => {
               ))}
             </div>
 
-            <div className="absolute left-0 flex flex-col" style={{ marginLeft: '-60px', top: `${100 / (activeBoard.rows + 1)}%`, height: `${(activeBoard.rows / (activeBoard.rows + 0.9)) * 100}%` }}>
+            <div
+              className="absolute left-0 flex flex-col"
+              style={{
+                marginLeft: "-60px",
+                top: `${100 / (activeBoard.rows + 1)}%`,
+                height: `${(activeBoard.rows / (activeBoard.rows + 0.9)) * 100}%`,
+              }}
+            >
               {Array.from({ length: activeBoard.rows }).map((_, i) => (
                 <div
                   key={`row-btn-${i}`}
                   className="flex gap-1 items-center justify-center"
-                  style={{ 
+                  style={{
                     height: `${100 / activeBoard.rows}%`,
                   }}
                 >
@@ -110,7 +120,13 @@ const JeopardyGrid: React.FC = () => {
               <div
                 key={`cell-${cell.row}-${cell.col}`}
                 onClick={() => {
-                  selectCell(cell);
+                  selectCell({
+                    ...cell,
+                    slides: cell.slides.map((s) => ({
+                      elements: s.elements.map((el) => ({ ...el })),
+                    })),
+                  });
+
                   if (!editMode) markCellUsed(cell);
                 }}
                 className={`border border-gray-400 font-bold flex items-center justify-center cursor-pointer text-center px-1 break-words transition relative
@@ -124,16 +140,14 @@ const JeopardyGrid: React.FC = () => {
                   <input
                     type="string"
                     value={cell.points}
-                    onChange={(e) =>
-                      updateCell({
+                    onChange={(e) => {
+                      const updatedCell = {
                         ...cell,
                         points: parseInt(e.target.value) || 0,
-                      })
-                    }
-                    onClick={(e) => e.stopPropagation()}
-                    className={`w-full h-full text-center font-bold border-none outline-none resize-none bg-transparent ${
-                      isUsed ? "text-gray-700" : "text-white"
-                    }`}
+                      };
+                      updateCell(updatedCell);
+                    }}
+                    className="w-full h-full bg-transparent text-center font-bold"
                   />
                 ) : (
                   cell.points

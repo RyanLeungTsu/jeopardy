@@ -2,7 +2,6 @@ import { create } from "zustand";
 
 export type ElementKind = "text" | "image" | "audio" | "video";
 export const DefaultFontSize = 40;
-
 export interface SlideElement {
   id: string;
   kind: ElementKind;
@@ -57,6 +56,9 @@ interface BoardState {
   selectCell: (cell: JeopardyCell | null) => void;
   updateCell: (cell: JeopardyCell) => void;
   markCellUsed: (cell: JeopardyCell) => void;
+  stagedCell: JeopardyCell | null;
+  setStagedCell: (cell: JeopardyCell | null) => void;
+  commitStagedCell: () => void;
 
   rows: number;
   columns: number;
@@ -254,22 +256,49 @@ export const useBoardStore = create<BoardState>((set, get) => {
         };
       }),
 
-    selectedCell: null,
-    selectCell: (cell) => set({ selectedCell: cell }),
+    stagedCell: null,
 
-    updateCell: (updated) => {
-      const { activeBoard } = get();
-      if (!activeBoard) return;
+    setStagedCell: (cell) => set({ stagedCell: cell }),
+
+    commitStagedCell: () => {
+      const { stagedCell, activeBoard } = get();
+      if (!stagedCell || !activeBoard) return;
+
       const newCells = activeBoard.cells.map((c) =>
-        c.row === updated.row && c.col === updated.col ? updated : c,
+        c.row === stagedCell.row && c.col === stagedCell.col ? stagedCell : c,
       );
+
       const updatedBoard = {
         ...activeBoard,
         cells: newCells,
         updatedAt: Date.now(),
       };
+
       get().updateActiveBoard(updatedBoard);
+      set({ stagedCell: null });
     },
+
+    selectedCell: null,
+    selectCell: (cell) => set({ selectedCell: cell }),
+
+    // updateCell: (updated) => {
+    //   set({ stagedCell: updated });
+    //   const { activeBoard } = get();
+    //   if (!activeBoard) return;
+    //   const newCells = activeBoard.cells.map((c) =>
+    //     c.row === updated.row && c.col === updated.col ? updated : c,
+    //   );
+    //   const updatedBoard = {
+    //     ...activeBoard,
+    //     cells: newCells,
+    //     updatedAt: Date.now(),
+    //   };
+    //   get().updateActiveBoard(updatedBoard);
+    // },
+
+    updateCell: (updated) => {
+  set({ stagedCell: updated });
+},
 
     markCellUsed: (cell) => {
       const { activeBoard } = get();
@@ -391,9 +420,9 @@ export const useBoardStore = create<BoardState>((set, get) => {
         updatedAt: Date.now(),
       });
     },
-addRowAt: (rowIndex: number) => {
+    addRowAt: (rowIndex: number) => {
       const { activeBoard } = get();
-      if (!activeBoard) return;
+      if (!activeBoard || activeBoard.rows >= 12) return;
 
       const newCells = activeBoard.cells.map((cell) => {
         if (cell.row > rowIndex) {
@@ -457,7 +486,7 @@ addRowAt: (rowIndex: number) => {
 
     addColumnAt: (colIndex: number) => {
       const { activeBoard } = get();
-      if (!activeBoard) return;
+      if (!activeBoard || activeBoard.columns >= 12) return;
 
       const newCells = activeBoard.cells.map((cell) => {
         if (cell.col > colIndex) {
@@ -515,7 +544,9 @@ addRowAt: (rowIndex: number) => {
           return cell;
         });
 
-      const newCategories = activeBoard.categories.filter((_, i) => i !== colIndex);
+      const newCategories = activeBoard.categories.filter(
+        (_, i) => i !== colIndex,
+      );
 
       get().updateActiveBoard({
         ...activeBoard,

@@ -18,16 +18,21 @@ interface SlidesProps {
 }
 
 const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
-  const updateCell = useBoardStore((s) => s.updateCell);
+  const setStagedCell = useBoardStore((s) => s.setStagedCell);
 
   const [slides, setSlides] = useState<Slide[]>(cell.slides);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [editing, setEditing] = useState(false);
   const [mediaTarget, setMediaTarget] = useState<number | null>(null);
+  const [unsavedSlide, savedSlide] = useState(false);
 
   const currentSlide = slides[currentSlideIndex];
 
   const mediaInputRef = useRef<HTMLInputElement>(null);
+
+  const saveSlide = () => {
+    savedSlide(false);
+  };
 
   const updateElement = (id: string, changes: Partial<SlideElement>) => {
     const updated = slides.map((slide, idx) =>
@@ -41,7 +46,9 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
         : slide,
     );
     setSlides(updated);
+    savedSlide(true);
   };
+
   // const for adding media
   const handleMediaAdded = (
     type: "image" | "audio" | "video",
@@ -60,6 +67,7 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
     });
     setSlides(updated);
     setMediaTarget(null);
+    savedSlide(true);
   };
   // Const for deleting slides
   const deleteCurrentSlide = () => {
@@ -74,6 +82,7 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
 
     setSlides(updatedSlides);
     setCurrentSlideIndex(newIndex);
+    savedSlide(true);
   };
   // const for removing elements
   const removeElement = (elementId: string) => {
@@ -86,6 +95,7 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
         : slide,
     );
     setSlides(updated);
+    savedSlide(true);
   };
 
   // const nextSlide = () => {
@@ -94,9 +104,9 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
   //   else close();
   // };
 
-  const saveChanges = () => {
-    updateCell({ ...cell, slides });
-  };
+  // const saveChanges = () => {
+  //   updateCell({ ...cell, slides });
+  // };
 
   useEffect(() => {
     const handlePaste = async (e: ClipboardEvent) => {
@@ -129,6 +139,7 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
               height: 300,
             });
             setSlides(updated);
+            savedSlide(true);
 
             console.log(`Image pasted successfully: ${mediaId}`);
           } catch (error) {
@@ -147,6 +158,27 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
       window.removeEventListener("paste", handlePaste);
     };
   }, [editing, slides, currentSlideIndex]);
+
+  const handleClose = () => {
+    if (unsavedSlide && !confirm("You have unsaved changes. Close anyway?")) {
+      return;
+    }
+
+
+    const updatedCell: JeopardyCell = {
+      row: cell.row,
+      col: cell.col,
+      points: cell.points,
+      slides: slides, 
+    };
+
+    setStagedCell(updatedCell);
+    
+    const { commitStagedCell } = useBoardStore.getState();
+    commitStagedCell();
+
+    close();
+  };
 
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-10 backdrop-blur-sm flex items-center justify-center z-50">
@@ -208,7 +240,6 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
                         }
                       />
 
-                      {/* Button for increasing and decresing font size */}
                       <div className="absolute bottom-1 left-1 flex gap-1">
                         <button
                           onClick={() =>
@@ -235,7 +266,6 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
                         >
                           A-
                         </button>
-                        {/* Text alignment controls */}
                         <button
                           onClick={() =>
                             updateElement(el.id, { textAlign: "left" })
@@ -288,16 +318,6 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
                           display: "block",
                         }}
                       />
-                      {/* <MediaDisplay
-                        element={el}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "fill",
-                          pointerEvents: "none",
-                          display: "block",
-                        }}
-                      /> */}
                       <button
                         onClick={() => removeElement(el.id)}
                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 hover:bg-red-600"
@@ -354,24 +374,19 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
             ),
           )}
         </div>
-
         {/*Exit button for slide ui */}
         <button
-          onClick={() => {
-            saveChanges();
-            close();
-          }}
-          className="rounded-full absolute top-2 right-2 w-10 h-10 inline-flex items-center justify-center p-[-2] overflow-hidden text-sm font-extrabold group   text-red-500 hover:text-white focus:outline-none focus:ring-0"
+          onClick={handleClose}
+          className="border rounded-full absolute top-2 right-2 w-10 h-10 inline-flex items-center justify-center p-[-2] overflow-hidden text-sm font-extrabold bg-white  text-red-500  focus:outline-none focus:ring-0"
           title="Close"
         >
-          <span className="relative px-4 py-2.5 transition-all ease-in duration-75 bg-white group-hover:bg-transparent">
+          <span className="relative px-4 py-2.5 transition-all ease-in duration-75 hover:bg-red-500 hover:text-white">
             ✕
           </span>
         </button>
 
         {/* Controls */}
         <div className="flex justify-center mb-2">
-          
           {/* Prev Slide Button */}
           <button
             onClick={() =>
@@ -379,16 +394,22 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
             }
             className="ml-4 mr-4 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold text-heading group bg-gradient-to-br from-blue-700 to-teal-200  text-blue-500 hover:text-white focus:outline-none focus:ring-0"
           >
-            <span className="relative px-4 py-2.5 transition-all ease-in duration-75 bg-white group-hover:bg-transparent">
+            <span className="relative px-4 py-2.5 transition-all ease-in duration-350 bg-white group-hover:bg-transparent">
               Prev
             </span>
           </button>
           {/* Toggle for editing and non-editing for slides */}
           <button
-            onClick={() => setEditing(!editing)}
+            onClick={() => {
+              if (editing) {
+                saveSlide();
+                alert("Slide saved!");
+              }
+              setEditing(!editing);
+            }}
             className={`ml-3 mr-3 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold group ${editing ? "bg-gradient-to-br from-yellow-400 to-red-400" : "bg-gradient-to-br from-orange-500 to-purple-500"} ${editing ? "text-orange-600" : "text-orange-400"}  focus:outline-none focus:ring-0  hover:text-white `}
           >
-            <span className="relative px-4 py-2.5 transition-all ease-in duration-75 bg-white group-hover:bg-transparent">
+            <span className="relative px-4 py-2.5 transition-all ease-in duration-350 bg-white group-hover:bg-transparent">
               {editing ? "Save" : "Edit"}
             </span>
           </button>
@@ -401,7 +422,7 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
             }}
             className="ml-4 mr-4 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold text-heading group bg-gradient-to-br from-blue-700 to-teal-200  text-blue-500 hover:text-white focus:outline-none focus:ring-0"
           >
-            <span className="relative px-4 py-2.5 transition-all ease-in duration-75 bg-white group-hover:bg-transparent">
+            <span className="relative px-4 py-2.5 transition-all ease-in duration-350 bg-white group-hover:bg-transparent">
               Next
             </span>
           </button>
@@ -429,10 +450,11 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
 
                 setSlides(updatedSlides);
                 setCurrentSlideIndex(currentSlideIndex + 1);
+                savedSlide(true);
               }}
               className="ml-3 mr-3 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold group bg-gradient-to-br from-teal-300 to-lime-400  text-teal-500 hover:text-white focus:outline-none focus:ring-0"
             >
-              <span className="relative px-4 py-2.5 transition-all ease-in duration-75 bg-white group-hover:bg-transparent">
+              <span className="relative px-4 py-2.5 transition-all ease-in duration-350 bg-white group-hover:bg-transparent">
                 Add Slide
               </span>
             </button>
@@ -443,12 +465,11 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
               onClick={deleteCurrentSlide}
               className="ml-3 mr-3 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold text-heading group bg-gradient-to-br from-red-600 to-orange-300  text-red-700 hover:text-white focus:outline-none focus:ring-0"
             >
-              <span className="relative px-4 py-2.5 transition-all ease-in duration-75 bg-white group-hover:bg-transparent">
+              <span className="relative px-4 py-2.5 transition-all ease-in duration-350 bg-white group-hover:bg-transparent">
                 Delete Slide
               </span>
             </button>
           )}
-
           {/* Add media button for slides */}
           {editing && (
             <button
@@ -458,12 +479,11 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
               }}
               className="ml-3 mr-3 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold text-heading group bg-gradient-to-br from-purple-700 to-pink-400  text-purple-500 hover:text-white focus:outline-none focus:ring-0"
             >
-              <span className="relative px-4 py-2.5 transition-all ease-in duration-75 bg-white group-hover:bg-transparent">
+              <span className="relative px-4 py-2.5 transition-all ease-in duration-350 bg-white group-hover:bg-transparent">
                 Add Media
               </span>
             </button>
           )}
-
           {/* Adding more text boxes than default */}
           {editing && (
             <button
@@ -480,16 +500,17 @@ const Slides: React.FC<SlidesProps> = ({ cell, close }) => {
                   fontSize: DefaultFontSize,
                 });
                 setSlides(updated);
+                savedSlide(true);
               }}
               className="ml-3 mr-3 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold text-heading group bg-gradient-to-br from-blue-700 to-teal-200  text-teal-500 hover:text-white focus:outline-none focus:ring-0"
             >
-              <span className="relative px-4 py-2.5 transition-all ease-in duration-75 bg-white group-hover:bg-transparent">
+              <span className="relative px-4 py-2.5 transition-all ease-in duration-350 bg-white group-hover:bg-transparent">
                 Add Text
               </span>
             </button>
           )}
         </div>
-
+        {/* Upload Media */}
         <MediaUploader
           ref={mediaInputRef}
           onAdd={(type, mediaId) => handleMediaAdded(type, mediaId)}

@@ -2,6 +2,12 @@
 import React, { useState } from "react";
 import { useBoardStore } from "../store/editorStore";
 
+type Player = {
+  id: string;
+  name: string;
+  score: string;
+};
+
 const Interface: React.FC = () => {
   const {
     boards,
@@ -11,6 +17,7 @@ const Interface: React.FC = () => {
     updateActiveBoard,
     createBoard,
     deleteBoard,
+
     editMode,
     setEditMode,
     resetPlayedCells,
@@ -19,21 +26,117 @@ const Interface: React.FC = () => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [boardName, setBoardName] = useState("");
+  // for players
+  const [players, setPlayers] = useState<Player[]>([
+    { id: "1", name: "Player 1", score: "0" },
+    { id: "2", name: "Player 2", score: "0" },
+    { id: "3", name: "Player 3", score: "0" },
+    { id: "4", name: "Player 4", score: "0" },
+  ]);
+
+  const addPlayer = () => {
+    if (players.length >= 10) return;
+    setPlayers([
+      ...players,
+      {
+        id: Date.now().toString(),
+        name: `Player ${players.length + 1}`,
+        score: "0",
+      },
+    ]);
+  };
+
+  const removePlayer = (index: number) => {
+    if (players.length <= 1) return;
+    setPlayers(players.filter((_, i) => i !== index));
+  };
+
+  const updatePlayerName = (index: number, name: string) => {
+    setPlayers((players) =>
+      players.map((p, i) => (i === index ? { ...p, name } : p)),
+    );
+  };
+
+  const updatePlayerScore = (index: number, score: string) => {
+    if (!/^[-]?\d*$/.test(score)) return;
+
+    setPlayers((players) =>
+      players.map((p, i) => (i === index ? { ...p, score } : p)),
+    );
+  };
 
   if (!activeBoard) return null;
   return (
     <>
+      {/* left side ui for players */}
+      <div className="fixed left-4 top-1/2 transform -translate-y-1/2 w-50 bg-white rounded-lg shadow-xl p-4 z-100">
+        <h2 className="text-xl font-bold text-gray-900 mb-4 text-center">
+          Players
+        </h2>
+
+        <div className="space-y-3 max-h-[70vh] overflow-y-auto">
+          {players.map((player, index) => (
+            <div
+              key={player.id}
+              className="bg-gray-50 rounded-lg p-3 border border-gray-200"
+            >
+              <div className="mb-2">
+                {/* min-w-0 to shrink into flex container */}
+                <div className="flex items-center gap-2 min-w-0">
+                  <input
+                    type="text"
+                    value={player.name}
+                    onChange={(e) => updatePlayerName(index, e.target.value)}
+                    className="flex-1 min-w-0 text-sm font-semibold text-gray-900 bg-transparent border-none outline-none"
+                    placeholder="Player name"
+                  />
+
+                  {players.length > 1 && (
+                    <button
+                      onClick={() => removePlayer(index)}
+                      className="shrink-0 text-red-500 hover:text-red-700 text-xs"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={player.score}
+                onChange={(e) => updatePlayerScore(index, e.target.value)}
+                className="
+    w-full text-gray-700 text-2xl font-bold text-center
+    bg-white rounded px-2 py-1 border border-gray-300
+    focus:outline-none focus:ring-2 focus:ring-blue-500
+    appearance-none
+  "
+              />
+            </div>
+          ))}
+        </div>
+
+        {players.length < 10 && (
+          <button
+            onClick={addPlayer}
+            className="w-40 ml-1 mr-1 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold text-heading group bg-gradient-to-br from-lime-400 to-teal-300  text-green-500 hover:text-white focus:outline-none focus:ring-0"
+          >
+            <span className="w-full relative px-6 py-3 transition-all ease-in duration-350 bg-gray-100 group-hover:bg-transparent">
+              Add Player
+            </span>
+          </button>
+        )}
+      </div>
       {/* Ui for the buttons (stackin on the right side)*/}
       <div className="fixed right-4 top-1/2 transform -translate-y-1/2 flex flex-col gap-3 z-50">
         <button
           onClick={() => setEditMode(!editMode)}
-          className={`px-4 py-2 rounded shadow-lg ${
-            editMode
-              ? "bg-green-500 hover:bg-green-600"
-              : "bg-gray-500 hover:bg-gray-600"
-          } text-white`}
+          className={` w-40 ml-4 mr-4 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold group ${editMode ? "bg-gradient-to-br from-green-600 to-lime-400" : "bg-gradient-to-br from-yellow-600 to-amber-500"} ${editMode ? "text-green-500" : "text-amber-400"}  focus:outline-none focus:ring-0  hover:text-white `}
         >
-          {editMode ? "Save" : "Edit"}
+          <span className="w-full relative px-4 py-2.5 transition-all ease-in duration-350 bg-white group-hover:bg-transparent">
+            {editMode ? "Save" : "Edit"}
+          </span>
         </button>
 
         <button
@@ -41,23 +144,29 @@ const Interface: React.FC = () => {
             if (!confirm("Reset all cells to unplayed?")) return;
             resetPlayedCells();
           }}
-          className="px-4 py-2 bg-yellow-500 text-white rounded shadow-lg hover:bg-yellow-600"
+          className="w-40 ml-4 mr-4 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold text-heading group bg-gradient-to-br from-red-700 to-orange-400  text-red-500 hover:text-white focus:outline-none focus:ring-0"
         >
-          Reset Play Area
+          <span className="w-full relative px-8 py-3 transition-all ease-in duration-350 bg-gray-100 group-hover:bg-transparent">
+            Reset Board
+          </span>
         </button>
-
+        {/* Profile Button */}
         <button
           onClick={() => setProfileOpen(!profileOpen)}
-          className="px-4 py-2 bg-purple-500 text-white rounded shadow-lg hover:bg-purple-600"
+          className="w-40 ml-4 mr-4 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold text-heading group bg-gradient-to-br from-purple-700 to-pink-200  text-purple-500 hover:text-white focus:outline-none focus:ring-0"
         >
-          Profile
+          <span className="w-full relative px-12 py-3 transition-all ease-in duration-350 bg-gray-100 group-hover:bg-transparent">
+            Profile
+          </span>
         </button>
-
+        {/* My Boards */}
         <button
           onClick={() => setSaveModalOpen(true)}
-          className="px-4 py-2 bg-blue-500 text-white rounded shadow-lg hover:bg-blue-600"
+          className="w-40 ml-4 mr-4 relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-bold text-heading group bg-gradient-to-br from-blue-700 to-cyan-200  text-blue-500 hover:text-white focus:outline-none focus:ring-0"
         >
-          My Boards
+          <span className="w-full relative px-6 py-3 transition-all ease-in duration-350 bg-gray-100 group-hover:bg-transparent">
+            Boards
+          </span>
         </button>
       </div>
 
@@ -120,20 +229,39 @@ const Interface: React.FC = () => {
                       <span className="flex-1 text-gray-900">{board.name}</span>
 
                       <div className="flex gap-1">
-                        <button
+                        {/* <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (!confirm(`Overwrite "${board.name}"?`)) return;
-                            updateActiveBoard({
+                            if (
+                              !confirm(
+                                `Overwrite "${board.name}"? This will save all slide changes.`,
+                              )
+                            )
+                              return;
+
+                            const {
+                              stagedCell,
+                              activeBoard,
+                              updateActiveBoard,
+                              commitStagedCell,
+                            } = useBoardStore.getState();
+
+                            // saves changes to the cell
+                            if (stagedCell) commitStagedCell();
+
+            
+                            const updatedBoard = {
                               ...activeBoard!,
-                              id: board.id,
+                              id: board.id, 
                               updatedAt: Date.now(),
-                            });
+                            };
+
+                            updateActiveBoard(updatedBoard);
                           }}
                           className="text-sm bg-red-500 text-white px-2 py-0.5 rounded hover:bg-red-600"
                         >
                           Overwrite
-                        </button>
+                        </button> */}
 
                         <button
                           onClick={() => {
